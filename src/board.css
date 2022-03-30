@@ -1,0 +1,6 @@
+.board {
+    box-sizing: border-box;
+    height: calc(100% - 5rem);
+    margin: 2.5rem;
+    overflow: visible;
+}
