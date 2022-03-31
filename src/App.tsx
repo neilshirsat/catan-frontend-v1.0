@@ -1,43 +1,85 @@
 import Board from "./Board";
 import './app.less'
-import { Button, Drawer, Space, Typography } from "antd";
+import { Button, Divider, Drawer, Space, Statistic, Typography } from "antd";
 import { useState } from "react";
+import GameCard from "./GameCard";
+import Deck from "./Deck";
+import Countdown from "antd/lib/statistic/Countdown";
 
 const App = () => {
-    const [isDrawerOpen, setDrawerOpen] = useState(false);
+    const [isTradeOpen, setTradeOpen] = useState(false);
+    const [isStoreOpen, setStoreOpen] = useState(false);
+    const [isDeckOpen, setDeckOpen] = useState(false);
 
     return (<div>
         <div className="app">
             <div className="app-sidebar">
-                <h1>
-                    Catan Game
-                </h1>
-                <hr color="#ccc"></hr>
+                <Typography.Title>
+                    Catan
+                </Typography.Title>
+                <Divider></Divider>
                 <div className="panel">
-                    <h2>
-                        Trade Cards
-                    </h2>
-                    <Button type="primary" onClick={()=>setDrawerOpen(true)}>
-                        Panel 1
-                    </Button>
+                    <Typography.Title level={3}>
+                        Turn
+                    </Typography.Title>
+                    <div className="group">
+                        <Typography.Text className="group-title">
+                            Name:
+                        </Typography.Text>
+                        <Typography.Text strong editable>
+                            Person Name
+                        </Typography.Text>
+                    </div>
+                    <div className="group">
+                        <Typography.Text className="group-title">
+                            Name:
+                        </Typography.Text>
+                        <Typography.Text strong editable>
+                            Person Name
+                        </Typography.Text>
+                    </div>
                 </div>
-                <hr color="#ccc"></hr>
+                <Divider></Divider>
                 <div className="panel">
-                    <Button type="primary">
-                        Panel 1
-                    </Button>
+                    <Typography.Title level={3}>
+                        Game Statics
+                    </Typography.Title>
+                    <Countdown title="Game Duration" value={Date.now() * 500}></Countdown>
                 </div>
-                <hr color="#ccc"></hr>
+                <Divider></Divider>
+                {/*<span className="bottom-aligned"></span>*/}
                 <div className="panel">
-                    <Button type="primary">
-                        Panel 1
-                    </Button>
+                    <Typography.Title level={3}>
+                        Actions
+                    </Typography.Title>
+                    <div className="section-items">
+                        <Button type="ghost" onClick={() => setDeckOpen(true)}>
+                            View Deck
+                        </Button>
+                        <Button type="ghost" onClick={() => setTradeOpen(true)}>
+                            Trade Cards
+                        </Button>
+                        <Button type="ghost" onClick={() => setStoreOpen(true)}>
+                            Store
+                        </Button>
+                        <Button type="primary" danger>
+                            Pass the Dice
+                        </Button>
+                    </div>
                 </div>
-                <hr color="#ccc"></hr>
+                <Divider></Divider>
                 <div className="panel">
-                    <Button type="primary">
-                        Panel 1
-                    </Button>
+                    <Typography.Title level={3}>
+                        Help
+                    </Typography.Title>
+                    <div className="section-items">
+                        <Button type="ghost">
+                            Game Controls
+                        </Button>
+                        <Button type="ghost">
+                            View Rules
+                        </Button>
+                    </div>
                 </div>
             </div>
             <Board></Board>
@@ -45,20 +87,46 @@ const App = () => {
                 title="Trade Cards"
                 placement="right"
                 size="large"
-                onClose={()=>setDrawerOpen(false)}
-                visible={isDrawerOpen}
+                onClose={() => setTradeOpen(false)}
+                visible={isTradeOpen}
                 extra={
                     <Space>
-                        <Button onClick={()=>setDrawerOpen(false)}>Cancel</Button>
-                        <Button type="primary" onClick={()=>setDrawerOpen(false)}>
-                            OK
-                        </Button>
                     </Space>
                 }
             >
                 <p>Some contents...</p>
                 <p>Some contents...</p>
                 <p>Some contents...</p>
+            </Drawer>
+            <Drawer
+                title="Store"
+                placement="right"
+                size="large"
+                onClose={() => setStoreOpen(false)}
+                visible={isStoreOpen}
+                extra={
+                    <Space>
+                    </Space>
+                }
+            >
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+            </Drawer>
+            <Drawer
+                title="Deck"
+                placement="right"
+                size="large"
+                onClose={() => setDeckOpen(false)}
+                visible={isDeckOpen}
+                extra={
+                    <Space>
+                    </Space>
+                }
+            >
+                <Deck>
+                    
+                </Deck>
             </Drawer>
         </div>
     </div>)

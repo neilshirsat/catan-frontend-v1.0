@@ -8,9 +8,35 @@
     width: 100vw;
     display: flex;
     flex-direction: row;
+    transition: width 400ms;
 }
 
 .app-sidebar {
     padding: 1rem;
     width: 350px;
+    display: flex;
+    flex-direction: column;
+    transition: width 400ms;
+    border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.section-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-block: 0.25rem;
+}
+
+.group-title {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.bottom-aligned {
+    margin-top: auto;
 }

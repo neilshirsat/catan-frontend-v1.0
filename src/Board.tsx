@@ -1,5 +1,5 @@
 import Hexagon from "./Hexagon";
-import './board.css'
+import './board.less'
 
 export const scaleFactor = 4;
 
@@ -35,14 +35,7 @@ const points: {
     ]
 
 const Board: React.FC<{}> = (props) => {
-    return (<div style={{
-        height: '100%',
-        display: "flex",
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: "1px solid #ccc",
-        flexGrow: '1'
-    }}>
+    return (<div className="board-root">
         <svg
             className="board" 
             viewBox={`0 0 ${90 * scaleFactor} ${80 * scaleFactor}`}
@@ -53,12 +46,13 @@ const Board: React.FC<{}> = (props) => {
                     <image height="1" width="1" preserveAspectRatio="none" href="" />
                 </pattern>
             </defs>
-
             {points.map(e =>
                 <Hexagon x={e.x} y={e.y}>
 
                 </Hexagon>
             )}
+            <line x1={36 * scaleFactor} y1={45 * scaleFactor} x2={36 * scaleFactor} y2={35 * scaleFactor} stroke="blue" width="2px"></line>
+            
         </svg>
     </div>)
 }
