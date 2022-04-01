@@ -2,11 +2,15 @@ import Board from "./Board";
 import './app.less'
 import { Button, Card, Divider, Drawer, Modal, Popconfirm, Space, Statistic, Typography } from "antd";
 import { useState } from "react";
-import GameCard from "./GameCard";
 import Deck from "./Deck";
-import Countdown from "antd/lib/statistic/Countdown";
 import Timer from "./Timer";
-import Meta from "antd/lib/card/Meta";
+
+function storeCardBottom() {
+    return [
+        <i className="ri-hammer-line" key="build"></i>,
+        <i className="ri-fullscreen-line" key="build"></i>
+    ]
+}
 
 const App = () => {
     const [isTradeOpen, setTradeOpen] = useState(false);
@@ -111,21 +115,54 @@ const App = () => {
                 }
             >
                 <div className="store-root">
-                    <Card 
-                        style={{ width: '250px' }} 
+                    <Card
+                        style={{ width: '300px' }}
                         title="Road"
-                        actions={[
-                            <i className="ri-building-line" key="build"></i>
-                        ]}>
+                        actions={storeCardBottom()}
+                        cover={
+                            <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="25" y="63" width="150" height="25" rx="2" fill="#00b0ff" />
+                            </svg>
+                        }>
+                        <Typography.Text>
+                            Materials Needed:
+                        </Typography.Text>
                     </Card>
-                    <Card style={{ width: '250px' }} title="Settlement">
-                        
+                    <Card style={{ width: '300px' }}
+                        title="Settlement"
+                        actions={storeCardBottom()}
+                        cover={
+                            <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M101.524 33.7084C100.539 32.7499 98.965 32.7661 98.0001 33.7447L64.0035 68.2209C63.9876 68.237 63.9719 68.2532 63.9566 68.2696C63.3828 68.6212 63 69.254 63 69.9762V117.976H137.988V70.0762C137.988 69.3844 137.653 68.7707 137.137 68.3881C137.079 68.3184 137.016 68.2505 136.948 68.1846L101.524 33.7084Z" fill="#FF0000" />
+                            </svg>
+                        }>
+                        <Typography.Text>
+                            Materials Needed:
+                        </Typography.Text>
                     </Card>
-                    <Card style={{ width: '250px' }} title="City">
-                        City
+                    <Card style={{ width: '300px' }}
+                        title="City"
+                        actions={storeCardBottom()}
+                        cover={
+                            <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M51.6051 21.087C50.6006 19.6209 48.4301 19.6416 47.4538 21.1265L25.418 54.6409C25.1775 55.0068 25.0476 55.3992 25.0126 55.7888C25.0043 55.8628 25 55.9381 25 56.0144V79.0144V127.014C25 128.119 25.8954 129.014 27 129.014H173C174.105 129.014 175 128.119 175 127.014V81.0144C175 79.9098 174.105 79.0144 173 79.0144H75V56.2079C75.044 55.671 74.9137 55.1085 74.5664 54.6014L51.6051 21.087Z" fill="#FF0000" />
+                            </svg>
+                        }>
+                        <Typography.Text>
+                            Materials Needed:
+                        </Typography.Text>
                     </Card>
-                    <Card style={{ width: '250px' }} title="Victory Card">
-                        Victory Card
+                    <Card style={{ width: '300px' }}
+                        title="Victory Card"
+                        actions={storeCardBottom()}
+                        cover={
+                            <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M101.524 33.7084C100.539 32.7499 98.965 32.7661 98.0001 33.7447L64.0035 68.2209C63.9876 68.237 63.9719 68.2532 63.9566 68.2696C63.3828 68.6212 63 69.254 63 69.9762V117.976H137.988V70.0762C137.988 69.3844 137.653 68.7707 137.137 68.3881C137.079 68.3184 137.016 68.2505 136.948 68.1846L101.524 33.7084Z" fill="#FF0000" />
+                            </svg>
+                        }>
+                        <Typography.Text>
+                            Materials Needed:
+                        </Typography.Text>
                     </Card>
                 </div>
             </Drawer>
