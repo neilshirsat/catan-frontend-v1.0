@@ -1,5 +1,6 @@
 import Hexagon from "./Hexagon";
 import './board.less'
+import { useEffect } from "react";
 
 export const scaleFactor = 4;
 
@@ -35,6 +36,11 @@ const points: {
     ]
 
 const Board: React.FC<{}> = (props) => {
+
+    useEffect(()=>{
+
+    })
+
     return (<div className="board-root">
         <svg
             className="board" 

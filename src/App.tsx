@@ -1,18 +1,53 @@
 import Board from "./Board";
 import './app.less'
-import { Button, Card, Divider, Drawer, Form, Input, InputNumber, Modal, Popconfirm, Space, Statistic, Typography } from "antd";
-import React, { useState } from "react";
+import { Button, Card, Divider, Drawer, Form, FormInstance, Input, InputNumber, Modal, Popconfirm, Space, Statistic, Typography } from "antd";
+import React, { useEffect, useState } from "react";
 import Deck from "./Deck";
 import Timer from "./Timer";
 import { CSSTransition, SwitchTransition, TransitionGroup } from "react-transition-group"
 import FormItemInput from "antd/lib/form/FormItemInput";
 import { FormListFieldData } from "antd/lib/form/FormList";
+import axios, { Axios } from 'axios'
 
 function storeCardBottom() {
     return [
         <i className="ri-hammer-line" key="build"></i>,
         <i className="ri-fullscreen-line" key="build"></i>
     ]
+}
+
+export interface UserData {
+    name: String,
+    playerNumber: String,
+    passcode: String,
+    deck: {
+        brick: {},
+        wool: {},
+        lumber: {},
+        grain: {},
+        ore: {},
+    }
+}
+
+export interface BoardData {
+    nodes: {
+        id: number,
+        playerControlled: number;
+        resourceType: String,
+        hasRobber: boolean 
+    }[],
+    edges: [
+        id: number,
+        playerControlled: number,
+        isRoad: boolean
+    ],
+    vertices: [
+        id: number,
+        playerControlled: number,
+        isCity: boolean,
+        isSettlement: boolean,
+        isPort: boolean
+    ],
 }
 
 const App = () => {
@@ -23,6 +58,22 @@ const App = () => {
     const [isRulesVisible, setRulesVisible] = useState(false);
     const [currentRoute, setCurrentRoute] = useState("start")
     const [startForm] = Form.useForm();
+
+    const onSubmit = (values: FormInstance) => {
+        console.log('Received values of form: ', values);
+        axios({
+            url: 'www.localhost:3000',
+            method: 'GET',
+            data: values
+        }).then(value=>{
+            console.log(value);
+        })
+        setCurrentRoute("app")
+    };
+
+    useEffect(()=>{
+
+    })
 
     return (
         <TransitionGroup className="route">
@@ -39,11 +90,13 @@ const App = () => {
                             <Divider></Divider>
                             <Form
                                 labelCol={{ span: 12 }}
-                                wrapperCol={{ span: 32 }}>
+                                wrapperCol={{ span: 32 }}
+                                form={startForm}
+                                onFinish={onSubmit}>
                                 <Typography.Title level={4} style={{ marginBottom: 16 }}>
                                     Please Enter the Names and Passcodes of the Players
                                 </Typography.Title>
-                                <Form.List 
+                                <Form.List
                                     name="names"
                                     initialValue={[
                                         {
@@ -76,12 +129,16 @@ const App = () => {
                                             {fields.map(({ key, name, ...restField }) => (
                                                 <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                                                     <Form.Item
+                                                        {...restField}
+                                                        name={[name, ' Name']}
                                                         label={['Player ', name + 1, ' Name']}
                                                         rules={[{ required: true, message: 'Missing Name' }]}
                                                     >
                                                         <Input placeholder="Name" />
                                                     </Form.Item>
                                                     <Form.Item
+                                                        {...restField}
+                                                        name={[name, ' Passcode']}
                                                         label={['Player ', name + 1, ' Passcode']}
                                                         rules={[{ required: true, message: 'Missing Passcode' }]}
                                                     >
@@ -90,8 +147,8 @@ const App = () => {
                                                     <Button onClick={() => {
                                                         if (fields.length <= 2) return;
                                                         remove(name)
-                                                    }} icon={<i className="ri-close-line"></i>} 
-                                                    disabled={fields.length <= 2}/>
+                                                    }} icon={<i className="ri-close-line"></i>}
+                                                        disabled={fields.length <= 2} />
                                                 </Space>
                                             ))}
                                             <Form.Item>
@@ -105,10 +162,16 @@ const App = () => {
                                         </>
                                     )}
                                 </Form.List>
+                                <Form.Item>
+                                <Button type="primary" htmlType="submit" onClick={
+                                    () => {
+                                        startForm.submit();
+                                    }
+                                }>
+                                    Start Game
+                                </Button>
+                                </Form.Item>
                             </Form>
-                            <Button type="primary" onClick={() => setCurrentRoute("app")}>
-                                Start Game
-                            </Button>
                         </div>
 
                     </div>
