@@ -6,6 +6,7 @@ import Deck from "./Deck";
 import Timer from "./Timer";
 import { CSSTransition, SwitchTransition, TransitionGroup } from "react-transition-group"
 import FormItemInput from "antd/lib/form/FormItemInput";
+import { FormListFieldData } from "antd/lib/form/FormList";
 
 function storeCardBottom() {
     return [
@@ -23,48 +24,100 @@ const App = () => {
     const [currentRoute, setCurrentRoute] = useState("start")
     const [startForm] = Form.useForm();
 
-    const amountFormFields: number[] = [];
-
-    function setFormFields(amount: number) {}
-
     return (
         <TransitionGroup className="route">
             {
                 currentRoute == "start" &&
                 <CSSTransition
                     unmountOnExit
-                    timeout={200}>
-                        <div className="start-screen">
-                            <div className="start-center">
-                                <Typography.Title>
-                                    Catan
+                    timeout={0}>
+                    <div className="start-screen">
+                        <div className="start-center">
+                            <Typography.Title>
+                                Welcome to Catan
+                            </Typography.Title>
+                            <Divider></Divider>
+                            <Form
+                                labelCol={{ span: 12 }}
+                                wrapperCol={{ span: 32 }}>
+                                <Typography.Title level={4} style={{ marginBottom: 16 }}>
+                                    Please Enter the Names and Passcodes of the Players
                                 </Typography.Title>
-                                <Divider></Divider>
-                                <Form
-                                    form={startForm} 
-                                    layout="vertical">
-                                    <Form.Item label="Amount Players">
-                                        <InputNumber onChange={(amount)=>setFormFields(amount)}>
-                                        </InputNumber>
-                                    </Form.Item>
-                                    {
-                                        amountFormFields.map((number)=>{
-                                            <React.Fragment>
-                                                <Form.Item label={`Player ${number}`}>
-                                                    <Input></Input>
-                                                </Form.Item>
-                                            </React.Fragment>
-                                        })
-                                    }
-                                </Form>
-                            </div>
+                                <Form.List 
+                                    name="names"
+                                    initialValue={[
+                                        {
+                                            fieldKey: 0,
+                                            isListField: true,
+                                            key: 0,
+                                            name: 0
+                                        },
+                                        {
+                                            fieldKey: 1,
+                                            isListField: true,
+                                            key: 1,
+                                            name: 1
+                                        }
+                                    ]}
+                                    rules={[
+                                        {
+                                            validator: async (_, names) => {
+                                                if (!names || names.length < 2) {
+                                                    return Promise.reject(new Error('Must Have 2 Players'));
+                                                }
+                                                if (!names || names.length > 4) {
+                                                    return Promise.reject(new Error('Cannot Have More than 4 Players'));
+                                                }
+                                            },
+                                        },
+                                    ]}>
+                                    {(fields, { add, remove }) => (
+                                        <>
+                                            {fields.map(({ key, name, ...restField }) => (
+                                                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                                    <Form.Item
+                                                        label={['Player ', name + 1, ' Name']}
+                                                        rules={[{ required: true, message: 'Missing Name' }]}
+                                                    >
+                                                        <Input placeholder="Name" />
+                                                    </Form.Item>
+                                                    <Form.Item
+                                                        label={['Player ', name + 1, ' Passcode']}
+                                                        rules={[{ required: true, message: 'Missing Passcode' }]}
+                                                    >
+                                                        <Input type="password" placeholder="Passcode" />
+                                                    </Form.Item>
+                                                    <Button onClick={() => {
+                                                        if (fields.length <= 2) return;
+                                                        remove(name)
+                                                    }} icon={<i className="ri-close-line"></i>} 
+                                                    disabled={fields.length <= 2}/>
+                                                </Space>
+                                            ))}
+                                            <Form.Item>
+                                                <Button type="dashed" disabled={(fields.length >= 4 || fields.length < 2)} onClick={() => {
+                                                    if (fields.length >= 4) return;
+                                                    add();
+                                                }} block icon={<i className="ri-add-line"></i>}>
+                                                    Add Player
+                                                </Button>
+                                            </Form.Item>
+                                        </>
+                                    )}
+                                </Form.List>
+                            </Form>
+                            <Button type="primary" onClick={() => setCurrentRoute("app")}>
+                                Start Game
+                            </Button>
                         </div>
+
+                    </div>
                 </CSSTransition>
             }
             {
                 currentRoute == "app" &&
                 <CSSTransition
-                    timeout={200}>
+                    timeout={0}>
                     <div className="app">
                         <div className="app-sidebar">
                             <div className="panel">
@@ -127,6 +180,9 @@ const App = () => {
                                     </Button>
                                     <Button type="ghost" onClick={() => setRulesVisible(true)}>
                                         View Rules
+                                    </Button>
+                                    <Button type="ghost" onClick={() => setCurrentRoute("start")}>
+                                        Exit to Start
                                     </Button>
                                 </div>
                             </div>
