@@ -7,7 +7,8 @@ import Timer from "./Timer";
 import { CSSTransition, SwitchTransition, TransitionGroup } from "react-transition-group"
 import FormItemInput from "antd/lib/form/FormItemInput";
 import { FormListFieldData } from "antd/lib/form/FormList";
-import axios, { Axios } from 'axios'
+import axios, { Axios, AxiosResponse } from 'axios'
+import ReactMarkdown from 'react-markdown'
 
 function storeCardBottom() {
     return [
@@ -59,6 +60,8 @@ const App = () => {
     const [currentRoute, setCurrentRoute] = useState("start")
     const [startForm] = Form.useForm();
 
+    const [gameRulesMarkdown, setGameRulesMarkdown] = useState('');
+
     const onSubmit = (values: FormInstance) => {
         console.log('Received values of form: ', values);
         axios({
@@ -71,8 +74,13 @@ const App = () => {
         setCurrentRoute("app")
     };
 
-    useEffect(()=>{
+    async function setGameRules(res: AxiosResponse<any,any>) {
+        setGameRulesMarkdown(res.data)
+    }
 
+    useEffect(()=>{
+        axios('http://localhost:3000/game-rules.md')
+            .then(setGameRules)
     })
 
     return (
@@ -244,9 +252,17 @@ const App = () => {
                                     <Button type="ghost" onClick={() => setRulesVisible(true)}>
                                         View Rules
                                     </Button>
-                                    <Button type="ghost" onClick={() => setCurrentRoute("start")}>
-                                        Exit to Start
-                                    </Button>
+                                    <Popconfirm
+                                        title="Are you sure you would like to exit the game? This action is irreversible"
+                                        onConfirm={() => setCurrentRoute("start")}
+                                        onCancel={() => undefined}
+                                        okText="Exit Game"
+                                        cancelText="Containue"
+                                    >
+                                        <Button type="ghost" danger>
+                                            Exit Game
+                                        </Button>
+                                    </Popconfirm>
                                 </div>
                             </div>
                         </div>
@@ -276,8 +292,9 @@ const App = () => {
                                 <Space>
                                 </Space>
                             }
+                            className="VScroll"
                         >
-                            <div className="store-root">
+                            <div className="store-root VScroll">
                                 <Card
                                     style={{ width: '300px' }}
                                     title="Road"
@@ -339,6 +356,7 @@ const App = () => {
                                 <Space>
                                 </Space>
                             }
+                            className="VScroll"
                         >
                             <Deck>
 
@@ -354,7 +372,8 @@ const App = () => {
                                 <Button type="primary" onClick={() => setControlsVisible(false)}>
                                     Close
                                 </Button>
-                            }>
+                            }
+                            className="VScroll">
                             <Typography.Title level={4}>
                                 User Interface
                             </Typography.Title>
@@ -372,13 +391,9 @@ const App = () => {
                                 <Button type="primary" onClick={() => setRulesVisible(false)}>
                                     Close
                                 </Button>
-                            }>
-                            <Typography.Title level={4}>
-                                Game Rules
-                            </Typography.Title>
-                            <Typography.Paragraph>
-                                Catan Rules
-                            </Typography.Paragraph>
+                            }
+                            className="VScroll">
+                            <ReactMarkdown children={gameRulesMarkdown} />
                         </Modal>
                     </div>
                 </CSSTransition>

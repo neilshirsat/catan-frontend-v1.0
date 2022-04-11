@@ -2,6 +2,45 @@
 @import '~antd/dist/antd.less'; // Import Ant Design styles by less entry
 @import './theme.less'; // variables to override above
 
+.ant-drawer-body,
+.VScroll {
+    overflow-y: auto;
+}
+
+.ant-drawer-body::-webkit-scrollbar,
+.VScroll::-webkit-scrollbar {
+    width: 15px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.ant-drawer-body::-webkit-scrollbar-thumb,
+.VScroll::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+    border: 5px solid transparent;
+    background-clip: content-box;
+    cursor: pointer;
+}
+
+.HScroll {
+    overflow-x: auto;
+}
+
+.HScroll::-webkit-scrollbar {
+    width: 15px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.HScroll::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar);
+    border-radius: 10px;
+    border: 5px solid transparent;
+    background-clip: content-box;
+    cursor: pointer;
+}
+
 .app {
     position: fixed;
     height: 100vh;
