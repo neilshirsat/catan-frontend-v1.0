@@ -58,7 +58,9 @@ const Board: React.FC<{
                             {
                                 line.map(hex=> {
                                     return (
-                                        <Hexagon num={hex.nodeId}>
+                                        <Hexagon 
+                                            num={hex.nodeId}
+                                            resourceType={"mountain"}>
 
                                         </Hexagon>
                                     )

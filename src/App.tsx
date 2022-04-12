@@ -1,13 +1,11 @@
 import Board from "./Board";
 import './app.less'
-import { Button, Card, Divider, Drawer, Form, FormInstance, Input, InputNumber, Modal, Popconfirm, Space, Statistic, Typography } from "antd";
-import React, { useEffect, useState } from "react";
+import { Button, Card, Divider, Drawer, Form, FormInstance, Input, Modal, Popconfirm, Space, Typography } from "antd";
+import { useEffect, useState } from "react";
 import Deck from "./Deck";
 import Timer from "./Timer";
-import { CSSTransition, SwitchTransition, TransitionGroup } from "react-transition-group"
-import FormItemInput from "antd/lib/form/FormItemInput";
-import { FormListFieldData } from "antd/lib/form/FormList";
-import axios, { Axios, AxiosResponse } from 'axios'
+import { CSSTransition, TransitionGroup } from "react-transition-group"
+import axios, { AxiosResponse } from 'axios'
 import ReactMarkdown from 'react-markdown'
 import { dev } from "./env";
 
@@ -37,21 +35,21 @@ export interface BoardData {
     nodes: {
         id: number,
         playerControlled: number;
-        resourceType: String,
+        resourceType: 'mountain' | 'pasture' | 'field' | 'desert' | 'hill' | 'forest',
         hasRobber: boolean 
     }[],
-    edges: [
+    edges: {
         id: number,
         playerControlled: number,
         isRoad: boolean
-    ],
-    vertices: [
+    }[],
+    vertices: {
         id: number,
         playerControlled: number,
         isCity: boolean,
         isSettlement: boolean,
         isPort: boolean
-    ],
+    }[],
 }
 
 const App = () => {
@@ -87,8 +85,132 @@ const App = () => {
     useEffect(()=>{
         axios('http://localhost:3000/game-rules.md')
             .then(setGameRules)
-        axios('http://localhost:3000/api/current-player-data')
-            .then((res: AxiosResponse<UserData, UserData>)=>setCurrentUserData(res.data))
+        if (dev) {
+            setCurrentBoard({
+                edges : [],
+                nodes : [
+                    {
+                        id : 1,
+                        resourceType: 'field',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 2,
+                        resourceType: 'forest',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 3,
+                        resourceType: 'pasture',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 4,
+                        resourceType: 'hill',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 5,
+                        resourceType: 'mountain',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 6,
+                        resourceType: 'field',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 7,
+                        resourceType: 'forest',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 8,
+                        resourceType: 'pasture',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 9,
+                        resourceType: 'hill',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 10,
+                        resourceType: 'mountain',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 11,
+                        resourceType: 'field',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 12,
+                        resourceType: 'forest',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 13,
+                        resourceType: 'pasture',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 14,
+                        resourceType: 'hill',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 15,
+                        resourceType: 'mountain',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 16,
+                        resourceType: 'field',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 17,
+                        resourceType: 'forest',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 18,
+                        resourceType: 'pasture',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    },
+                    {
+                        id : 19,
+                        resourceType: 'desert',
+                        hasRobber: false,
+                        playerControlled: -1,
+                    }
+                ],
+                vertices : [],
+            })
+        }
+        else {
+            axios('http://localhost:3000/api/current-player-data')
+                .then((res: AxiosResponse<UserData, UserData>)=>setCurrentUserData(res.data))
+        }
     })
 
     return (
