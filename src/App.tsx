@@ -9,6 +9,9 @@ import FormItemInput from "antd/lib/form/FormItemInput";
 import { FormListFieldData } from "antd/lib/form/FormList";
 import axios, { Axios, AxiosResponse } from 'axios'
 import ReactMarkdown from 'react-markdown'
+import { dev } from "./env";
+
+
 
 function storeCardBottom() {
     return [
@@ -62,6 +65,9 @@ const App = () => {
 
     const [gameRulesMarkdown, setGameRulesMarkdown] = useState('');
 
+    const [currentUserData, setCurrentUserData] = useState<UserData>({} as UserData);
+    const [currentBoard, setCurrentBoard] = useState<BoardData>({} as BoardData);
+
     const onSubmit = (values: FormInstance) => {
         console.log('Received values of form: ', values);
         axios({
@@ -81,6 +87,8 @@ const App = () => {
     useEffect(()=>{
         axios('http://localhost:3000/game-rules.md')
             .then(setGameRules)
+        axios('http://localhost:3000/api/current-player-data')
+            .then((res: AxiosResponse<UserData, UserData>)=>setCurrentUserData(res.data))
     })
 
     return (
@@ -199,8 +207,33 @@ const App = () => {
                                     <Typography.Text className="group-title">
                                         Player Name:
                                     </Typography.Text>
-                                    <Typography.Text strong editable>
-                                        Player Name
+                                    <Typography.Text strong editable={{
+                                        onChange: (newName)=>{
+                                            if (dev) {
+                                                setCurrentUserData(state=>{
+                                                    return {
+                                                        ...state,
+                                                        name: newName
+                                                    }
+                                                })
+                                            }
+                                            else {
+                                                axios('http://localhost:3000/api/change-name', {
+                                                    method: 'POST',
+                                                    data: 'user'
+                                                })
+                                                    .then(res=>{
+                                                        setCurrentUserData(state=>{
+                                                            return {
+                                                                ...state,
+                                                                name: newName
+                                                            }
+                                                        })
+                                                    })
+                                            }
+                                        }
+                                    }}>
+                                        {currentUserData.name}
                                     </Typography.Text>
                                 </div>
                                 <div className="group">
@@ -266,7 +299,7 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
-                        <Board></Board>
+                        <Board boardData={currentBoard} changeFn={setCurrentBoard}></Board>
                         <Drawer
                             title="Trade Cards"
                             placement="right"
