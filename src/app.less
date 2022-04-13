@@ -113,19 +113,31 @@
     width: 100vw;
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     transition: width 400ms;
 }
 
 .start-center {
-    border: 1px solid #ccc;
+    height: 100%;
 
     text-align: center;
     border-radius: 2.5px;
     padding: 1rem;
     margin-top: 5rem;
-    height: max-content;
     min-width: 685px;
+
+    background-color: white;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.start-background {
+    flex-grow: 1;
+    background-image: url(https://thumbs.dreamstime.com/z/palau-islands-above-beautiful-view-169342201.jpg);
+    background-size: cover;
+    background-position: top;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .trade-root {

@@ -339,7 +339,7 @@ const App = () => {
                                 </Form.Item>
                             </Form>
                         </div>
-
+                        <div className="start-background"></div>
                     </div>
                 </CSSTransition>
             }
