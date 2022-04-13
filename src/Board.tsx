@@ -40,6 +40,62 @@ const points: {
     ]
 ]
 
+const edges: {
+    edgeId: number,
+    angle: number,
+    line: number,
+    offsetTop: number,
+    leftPosition: number,
+    offsetLeftR: number,
+    offsetLeftM: number,
+}[] = [
+    { 
+        edgeId: 8,
+        angle: 0,
+        line: 0.25,
+        offsetTop: 0,
+        leftPosition: 1,
+        offsetLeftM: 1,
+        offsetLeftR: 0,
+    },
+    { 
+        edgeId: 9,
+        angle: 0,
+        line: 0.25,
+        offsetTop: 0,
+        leftPosition: 2,
+        offsetLeftM: 1,
+        offsetLeftR: 0,
+    },
+    { 
+        edgeId: 20,
+        angle: 0.5,
+        line: 1,
+        offsetTop: 0,
+        leftPosition: 0.5,
+        offsetLeftM: 1,
+        offsetLeftR: 0,
+    },
+    { 
+        edgeId: 21,
+        angle: 0,
+        line: 0.5,
+        offsetTop: 0.25,
+        leftPosition: 1.5,
+        offsetLeftM: 1,
+        offsetLeftR: 0,
+    },
+    { 
+        edgeId: 22,
+        angle: 0.5,
+        line: 0.5,
+        offsetTop: 0.25,
+        leftPosition: 2.5,
+        offsetLeftM: 1,
+        offsetLeftR: 0,
+    },
+]
+
 const Board: React.FC<{
     boardData: BoardData,
     changeFn: Dispatch<React.SetStateAction<BoardData>>
@@ -68,6 +124,18 @@ const Board: React.FC<{
                             }
                         </div>
                     )
+                })
+            }
+            {
+                edges.map(edge=>{
+                    return (<div className="edge" style={{
+                        top: `calc(((var(--hex-height) * ${edge.line}) + 1rem) + ( var(--hex-height) * ${edge.offsetTop} ))`,
+                        left: `calc((((var(--hex-width) + 5px ) * ${edge.leftPosition}) + 1rem ) + (var(--hex-width) * ${edge.offsetLeftM} + ${edge.offsetLeftR}px))`,
+                        transform: `rotate(${edge.angle}deg)`,
+                        zIndex: 1,
+                    }}>
+
+                    </div>)
                 })
             }
         </div>
