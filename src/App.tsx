@@ -34,6 +34,7 @@ export interface UserData {
 export interface BoardData {
     nodes: {
         id: number,
+        numPiece: number,
         playerControlled: number;
         resourceType: 'mountain' | 'pasture' | 'field' | 'desert' | 'hill' | 'forest',
         hasRobber: boolean 
@@ -50,6 +51,146 @@ export interface BoardData {
         isSettlement: boolean,
         isPort: boolean
     }[],
+}
+
+const devBoard : BoardData = {
+    edges : [],
+    nodes : [
+        {
+            id : 1,
+            resourceType: 'field',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 5,
+        },
+        {
+            id : 2,
+            resourceType: 'forest',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 2,
+        },
+        {
+            id : 3,
+            resourceType: 'pasture',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 6,
+        },
+        {
+            id : 4,
+            resourceType: 'hill',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 3,
+        },
+        {
+            id : 5,
+            resourceType: 'mountain',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 8,
+        },
+        {
+            id : 6,
+            resourceType: 'field',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 10,
+        },
+        {
+            id : 7,
+            resourceType: 'forest',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 9,
+        },
+        {
+            id : 8,
+            resourceType: 'pasture',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 12,
+        },
+        {
+            id : 9,
+            resourceType: 'hill',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 11,
+        },
+        {
+            id : 10,
+            resourceType: 'mountain',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 4,
+        },
+        {
+            id : 11,
+            resourceType: 'field',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 8,
+        },
+        {
+            id : 12,
+            resourceType: 'forest',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 10,
+        },
+        {
+            id : 13,
+            resourceType: 'pasture',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 9,
+        },
+        {
+            id : 14,
+            resourceType: 'hill',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 4,
+        },
+        {
+            id : 15,
+            resourceType: 'mountain',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 5,
+        },
+        {
+            id : 16,
+            resourceType: 'field',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 6,
+        },
+        {
+            id : 17,
+            resourceType: 'forest',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 3,
+        },
+        {
+            id : 18,
+            resourceType: 'pasture',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 11,
+        },
+        {
+            id : 19,
+            resourceType: 'desert',
+            hasRobber: false,
+            playerControlled: -1,
+            numPiece: 0,
+        }
+    ],
+    vertices : [],
 }
 
 const App = () => {
@@ -83,134 +224,21 @@ const App = () => {
     }
 
     useEffect(()=>{
-        axios('http://localhost:3000/game-rules.md')
-            .then(setGameRules)
         if (dev) {
-            setCurrentBoard({
-                edges : [],
-                nodes : [
-                    {
-                        id : 1,
-                        resourceType: 'field',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 2,
-                        resourceType: 'forest',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 3,
-                        resourceType: 'pasture',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 4,
-                        resourceType: 'hill',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 5,
-                        resourceType: 'mountain',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 6,
-                        resourceType: 'field',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 7,
-                        resourceType: 'forest',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 8,
-                        resourceType: 'pasture',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 9,
-                        resourceType: 'hill',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 10,
-                        resourceType: 'mountain',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 11,
-                        resourceType: 'field',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 12,
-                        resourceType: 'forest',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 13,
-                        resourceType: 'pasture',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 14,
-                        resourceType: 'hill',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 15,
-                        resourceType: 'mountain',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 16,
-                        resourceType: 'field',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 17,
-                        resourceType: 'forest',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 18,
-                        resourceType: 'pasture',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    },
-                    {
-                        id : 19,
-                        resourceType: 'desert',
-                        hasRobber: false,
-                        playerControlled: -1,
-                    }
-                ],
-                vertices : [],
-            })
+            setCurrentBoard(devBoard)
         }
-        else {
-            axios('http://localhost:3000/api/current-player-data')
-                .then((res: AxiosResponse<UserData, UserData>)=>setCurrentUserData(res.data))
-        }
+    })
+
+    useEffect(()=>{
+        //axios('http://localhost:3000/game-rules.md')
+        //    .then(setGameRules)
+        //if (dev) {
+        //    
+        //}
+        //else {
+        //    axios('http://localhost:3000/api/current-player-data')
+        //        .then((res: AxiosResponse<UserData, UserData>)=>setCurrentUserData(res.data))
+        //}
     })
 
     return (
@@ -290,7 +318,7 @@ const App = () => {
                                                 </Space>
                                             ))}
                                             <Form.Item>
-                                                <Button type="dashed" disabled={(fields.length >= 4 || fields.length < 2)} onClick={() => {
+                                                <Button type="ghost" disabled={(fields.length >= 4 || fields.length < 2)} onClick={() => {
                                                     if (fields.length >= 4) return;
                                                     add();
                                                 }} block icon={<i className="ri-add-line"></i>}>
@@ -412,7 +440,7 @@ const App = () => {
                                         onConfirm={() => setCurrentRoute("start")}
                                         onCancel={() => undefined}
                                         okText="Exit Game"
-                                        cancelText="Containue"
+                                        cancelText="Continue"
                                     >
                                         <Button type="ghost" danger>
                                             Exit Game
@@ -433,9 +461,18 @@ const App = () => {
                                 </Space>
                             }
                         >
-                            <p>Some contents...</p>
-                            <p>Some contents...</p>
-                            <p>Some contents...</p>
+                            <div className="trade-root">
+                                <div className="trade-game-root">
+                                    <Typography.Title level={2}>
+                                        Trade with the Game
+                                    </Typography.Title>
+                                </div>
+                                <div className="trade-player-root">
+                                    <Typography.Title level={2}>
+                                        Trade with Another Player
+                                    </Typography.Title>
+                                </div>
+                            </div>
                         </Drawer>
                         <Drawer
                             title="Store"

@@ -1,3 +1,4 @@
+import { Typography } from 'antd';
 import './Deck.less'
 import GameCard from './GameCard';
 
@@ -17,6 +18,29 @@ const Deck : React.FC<{}> = (props) => {
             img="./Lumber.png" ></GameCard>
         <GameCard title="Wool" count={1}  
             img="./Wool.png" ></GameCard>
+        <GameCard title="Longest Road" count={1} img=""
+                bottom={<>
+                    <Typography.Text strong>2 Victory Points!</Typography.Text>
+                    <Typography.Paragraph className="p">
+                        This card goes to the player with the largest unbroken road of
+                        at least 5 segemants. Another player who builds a longer road takes
+                        this card
+                    </Typography.Paragraph>
+                </>}>
+
+        </GameCard>
+        <GameCard title="Largest Army" count={1}  
+            img="" 
+                bottom={<>
+                    <Typography.Text strong>2 Victory Points!</Typography.Text>
+                    <Typography.Paragraph className="p">
+                        This card goes to the player with the largest unbroken road of
+                        at least 5 segemants. Another player who builds a longer road takes
+                        this card
+                    </Typography.Paragraph>
+                </>}>
+
+        </GameCard>
     </div>)
 }
 
