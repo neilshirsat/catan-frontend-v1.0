@@ -222,7 +222,10 @@ const App = () => {
         }
     }
 
-    const onSubmit = (values: FormInstance) => {
+    const onSubmit = (values: FormInstance<{
+        ' Name': string,
+        ' Last Name': string,
+    }>) => {
         console.log('Received values of form: ', values);
         const form: {
             amountPlayers: number,
@@ -230,11 +233,11 @@ const App = () => {
             playerPasscodes: string[]
         } = {
             //@ts-ignore
-            amountPlayers: values.length,
+            amountPlayers: values.names.length,
             //@ts-ignore
-            playerNames: getNames(values),
+            playerNames: getNames(values.names),
             //@ts-ignore
-            playerPasscodes: getPasscodes(values)
+            playerPasscodes: getPasscodes(values.names)
         }
         axios({
             url: `www.localhost:${IPC_PORT_CATAN}/setup-names`,
