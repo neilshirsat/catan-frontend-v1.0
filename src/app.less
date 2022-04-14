@@ -5,6 +5,7 @@
 .ant-drawer-body,
 .VScroll {
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .ant-drawer-body::-webkit-scrollbar,
@@ -21,6 +22,10 @@
     border: 5px solid transparent;
     background-clip: content-box;
     cursor: pointer;
+}
+
+.ant-drawer-body {
+    overflow-x: hidden;
 }
 
 .HScroll {
@@ -48,6 +53,7 @@
     display: flex;
     flex-direction: row;
     transition: width 400ms;
+    overflow: hidden;
 }
 
 .app-sidebar {
@@ -116,7 +122,8 @@
     justify-content: center;
     transition: width 400ms;
 
-    background-image: url(https://cdn1.epicgames.com/ue/product/Screenshot/29-1920x1080-27fbb87a5bce0dc61082424320ad4111.jpg?resize=1&w=1920);
+    
+    background-image: url(../public/start-background.webp);
     background-size: cover;
     background-position: top;
     user-select: none;
@@ -172,7 +179,7 @@
     align-items: center;
     transition: width 400ms;
 
-    background-image: url(https://cdn1.epicgames.com/ue/product/Screenshot/29-1920x1080-27fbb87a5bce0dc61082424320ad4111.jpg?resize=1&w=1920);
+    background-image: url(../public/start-background.webp);
     background-size: cover;
     background-position: top;
     user-select: none;
