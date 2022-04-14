@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown'
 import { dev } from "./env";
 
 
+export const IPC_PORT_CATAN = 6584;
 
 function storeCardBottom() {
     return [
@@ -207,12 +208,38 @@ const App = () => {
     const [currentUserData, setCurrentUserData] = useState<UserData>({} as UserData);
     const [currentBoard, setCurrentBoard] = useState<BoardData>({} as BoardData);
 
+    function getNames(values: any) {
+        const arr: string[] = [];
+        for (let val of values) {
+            arr.push(val[' Name']);
+        }
+    }
+
+    function getPasscodes(values: any) {
+        const arr: string[] = [];
+        for (let val of values) {
+            arr.push(val[' Passcode']);
+        }
+    }
+
     const onSubmit = (values: FormInstance) => {
         console.log('Received values of form: ', values);
+        const form: {
+            amountPlayers: number,
+            playerNames: string[],
+            playerPasscodes: string[]
+        } = {
+            //@ts-ignore
+            amountPlayers: values.length,
+            //@ts-ignore
+            playerNames: getNames(values),
+            //@ts-ignore
+            playerPasscodes: getPasscodes(values)
+        }
         axios({
-            url: 'www.localhost:3000',
+            url: `www.localhost:${IPC_PORT_CATAN}/setup-names`,
             method: 'GET',
-            data: values
+            data: form,
         }).then(value=>{
             console.log(value);
         })
