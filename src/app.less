@@ -107,24 +107,83 @@
     transition: right 200ms;
 }
 
+.title-screen {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    transition: width 400ms;
+
+    background-image: url(https://cdn1.epicgames.com/ue/product/Screenshot/29-1920x1080-27fbb87a5bce0dc61082424320ad4111.jpg?resize=1&w=1920);
+    background-size: cover;
+    background-position: top;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.title {
+    margin-top: 5rem;
+
+    .tg {
+        font-family: 'Oswald';
+        font-size: 400;
+        font-size: 4rem;
+    }
+}
+
+.title-bottom {
+    position: absolute;
+    right: 1rem;
+    bottom: 0;
+
+    .tg-bottom {
+        font-family: 'Oswald';
+        font-size: 400;
+        font-size: 1.75rem;
+    }
+}
+
+.title-start {
+    position: absolute;
+    bottom: 5rem;
+    left: auto;
+    right: auto;
+
+    button {
+        height: 4rem;
+        width: 10rem;
+        border-radius: 1rem;
+
+        font-family: 'Oswald';
+        font-size: 400;
+        font-size: 1.75rem;
+    }
+}
+
 .start-screen {
     position: fixed;
     height: 100vh;
     width: 100vw;
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
     transition: width 400ms;
+
+    background-image: url(https://cdn1.epicgames.com/ue/product/Screenshot/29-1920x1080-27fbb87a5bce0dc61082424320ad4111.jpg?resize=1&w=1920);
+    background-size: cover;
+    background-position: top;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .start-center {
-    height: 100%;
-
     text-align: center;
-    border-radius: 2.5px;
-    padding: 1rem;
-    margin-top: 5rem;
-    min-width: 685px;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-top: -5rem;
 
     background-color: white;
     user-select: none;
@@ -133,7 +192,7 @@
 
 .start-background {
     flex-grow: 1;
-    background-image: url(https://thumbs.dreamstime.com/z/palau-islands-above-beautiful-view-169342201.jpg);
+    background-image: url(https://cdn1.epicgames.com/ue/product/Screenshot/29-1920x1080-27fbb87a5bce0dc61082424320ad4111.jpg?resize=1&w=1920);
     background-size: cover;
     background-position: top;
     user-select: none;

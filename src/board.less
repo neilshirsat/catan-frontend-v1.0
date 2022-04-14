@@ -9,9 +9,11 @@
     justify-content: center;
 	height: 100vh;
 	
-	background: url(../public/catan-background.jpg);
+	background: url(https://gfi.org/wp-content/uploads/2021/02/shutterstock_1681655407_2000px.jpg);
     background-repeat: no-repeat;
     background-size: cover;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .container {
@@ -20,13 +22,15 @@
 	flex-direction: column;
 	height: 100%;
 	position: relative;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .line {
 	display: flex;
     justify-content: center;
-	margin-top: calc(var(--hex-height) * 0.22 * -1);
-	gap: 5px;
+	margin-top: calc(var(--hex-height) * 0.25 * -1);
+	gap: 0;
 }
 
 .line:nth-child(1) {
@@ -60,12 +64,68 @@
 
 .edge {
 	position: absolute;
-	width: 5px;
+	width: 20px;
 	height: calc( var(--hex-height) / 2 );
 	background: transparent;
 	z-index: 10;
+	border-radius: 1rem;
 
-	&:hover {
-		background-color: gold;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	&.selected {
+		.input-circle {
+			display: block;
+		}
+	}
+
+	.input-circle {
+		//display: none;
+		display: block;
+		height: 1rem;
+		width: 1rem;
+
+		border-radius: 100%;
+		animation: glow 1s ease-in-out infinite alternate;
+	}
+}
+
+@keyframes glow {
+	from {
+		box-shadow: #006a23aa 0 0 1px 2px;
+	}
+	to {
+		box-shadow: #006a23aa 0 0 6px 4px;
+	}
+}
+
+.road {
+	width: 10px;
+	height: calc( var(--hex-height) / 3 );
+	background: transparent;
+	z-index: 10;
+	border-radius: 1rem;
+    background-color: gold;
+    position: absolute;
+    cursor: pointer;
+}
+
+.vertex {
+	position: absolute;
+	height: 1rem;
+	width: 1rem;
+	background: transparent;
+	z-index: 10;
+	border-radius: 100%;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	animation: glow 1s ease-in-out infinite alternate;
+	
+	&.selected {
+		animation: glow 1s ease-in-out infinite alternate;
 	}
 }

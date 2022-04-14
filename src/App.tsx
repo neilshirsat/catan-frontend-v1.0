@@ -199,7 +199,7 @@ const App = () => {
     const [isDeckOpen, setDeckOpen] = useState(false);
     const [isControlsVisible, setControlsVisible] = useState(false);
     const [isRulesVisible, setRulesVisible] = useState(false);
-    const [currentRoute, setCurrentRoute] = useState("start")
+    const [currentRoute, setCurrentRoute] = useState("title")
     const [startForm] = Form.useForm();
 
     const [gameRulesMarkdown, setGameRulesMarkdown] = useState('');
@@ -244,14 +244,38 @@ const App = () => {
     return (
         <TransitionGroup className="route">
             {
-                currentRoute == "start" &&
+                currentRoute === "title" &&
+                <CSSTransition
+                    unmountOnExit
+                    timeout={0}>
+                    <div className="title-screen">
+                        <div className="title">
+                            <Typography.Title className="tg">
+                                Settlers of Catan
+                            </Typography.Title>
+                        </div>
+                        <div className="title-bottom">
+                            <Typography.Text className="tg-bottom">
+                                io.neilshirsat.Catan
+                            </Typography.Text>
+                        </div>
+                        <div className="title-start">
+                            <Button type="primary" onClick={()=>setCurrentRoute("start")}>
+                                Start
+                            </Button>
+                        </div>
+                    </div>
+                </CSSTransition>
+            }
+            {
+                currentRoute === "start" &&
                 <CSSTransition
                     unmountOnExit
                     timeout={0}>
                     <div className="start-screen">
                         <div className="start-center">
                             <Typography.Title>
-                                Welcome to Catan
+                                Game Setup
                             </Typography.Title>
                             <Divider></Divider>
                             <Form
@@ -259,7 +283,7 @@ const App = () => {
                                 wrapperCol={{ span: 32 }}
                                 form={startForm}
                                 onFinish={onSubmit}>
-                                <Typography.Title level={4} style={{ marginBottom: 16 }}>
+                                <Typography.Title level={4} style={{ marginBottom: 32 }}>
                                     Please Enter the Names and Passcodes of the Players
                                 </Typography.Title>
                                 <Form.List
@@ -339,7 +363,6 @@ const App = () => {
                                 </Form.Item>
                             </Form>
                         </div>
-                        <div className="start-background"></div>
                     </div>
                 </CSSTransition>
             }
@@ -437,7 +460,7 @@ const App = () => {
                                     </Button>
                                     <Popconfirm
                                         title="Are you sure you would like to exit the game? This action is irreversible"
-                                        onConfirm={() => setCurrentRoute("start")}
+                                        onConfirm={() => setCurrentRoute("title")}
                                         onCancel={() => undefined}
                                         okText="Exit Game"
                                         cancelText="Continue"
