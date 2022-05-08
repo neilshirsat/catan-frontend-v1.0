@@ -1,6 +1,6 @@
-import Board from "./Board";
+import Board, { EdgeData, IEdgeData, IVertexData, NodeData, VertexData } from "./Board";
 import './app.less'
-import { Button, Card, Divider, Drawer, Form, FormInstance, Input, Modal, Popconfirm, Space, Typography } from "antd";
+import { Button, Card, Divider, Drawer, Form, FormInstance, Input, Modal, Popconfirm, Select, Space, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import Deck from "./Deck";
 import Timer from "./Timer";
@@ -8,7 +8,9 @@ import { CSSTransition, TransitionGroup } from "react-transition-group"
 import axios, { AxiosResponse } from 'axios'
 import ReactMarkdown from 'react-markdown'
 import { dev } from "./env";
+import { Option } from "antd/lib/mentions";
 
+const { info } = Modal;
 
 export const IPC_PORT_CATAN = 6584;
 
@@ -20,178 +22,33 @@ function storeCardBottom() {
 }
 
 export interface UserData {
-    name: String,
-    playerNumber: String,
-    passcode: String,
+    amountCities: number
+    amountResourceCards: number
+    amountRoads: number
+    amountSettlements: number
+    color: "BLACK" | "WHITE" | "ORANGE" | "YELLOW" | "PURPLE" | "BLUE" | "GREEN";
     deck: {
-        brick: {},
-        wool: {},
-        lumber: {},
-        grain: {},
-        ore: {},
+        ORE: number,
+        WOOL: number,
+        WHEAT: number,
+        LUMBER: number,
+        BRICK: number
     }
-}
-
-export interface BoardData {
-    nodes: {
-        id: number,
-        numPiece: number,
-        playerControlled: number;
-        resourceType: 'mountain' | 'pasture' | 'field' | 'desert' | 'hill' | 'forest',
-        hasRobber: boolean 
-    }[],
-    edges: {
-        id: number,
-        playerControlled: number,
-        isRoad: boolean
-    }[],
-    vertices: {
-        id: number,
-        playerControlled: number,
-        isCity: boolean,
-        isSettlement: boolean,
-        isPort: boolean
-    }[],
-}
-
-const devBoard : BoardData = {
-    edges : [],
-    nodes : [
-        {
-            id : 1,
-            resourceType: 'field',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 5,
-        },
-        {
-            id : 2,
-            resourceType: 'forest',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 2,
-        },
-        {
-            id : 3,
-            resourceType: 'pasture',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 6,
-        },
-        {
-            id : 4,
-            resourceType: 'hill',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 3,
-        },
-        {
-            id : 5,
-            resourceType: 'mountain',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 8,
-        },
-        {
-            id : 6,
-            resourceType: 'field',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 10,
-        },
-        {
-            id : 7,
-            resourceType: 'forest',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 9,
-        },
-        {
-            id : 8,
-            resourceType: 'pasture',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 12,
-        },
-        {
-            id : 9,
-            resourceType: 'hill',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 11,
-        },
-        {
-            id : 10,
-            resourceType: 'mountain',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 4,
-        },
-        {
-            id : 11,
-            resourceType: 'field',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 8,
-        },
-        {
-            id : 12,
-            resourceType: 'forest',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 10,
-        },
-        {
-            id : 13,
-            resourceType: 'pasture',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 9,
-        },
-        {
-            id : 14,
-            resourceType: 'hill',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 4,
-        },
-        {
-            id : 15,
-            resourceType: 'mountain',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 5,
-        },
-        {
-            id : 16,
-            resourceType: 'field',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 6,
-        },
-        {
-            id : 17,
-            resourceType: 'forest',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 3,
-        },
-        {
-            id : 18,
-            resourceType: 'pasture',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 11,
-        },
-        {
-            id : 19,
-            resourceType: 'desert',
-            hasRobber: false,
-            playerControlled: -1,
-            numPiece: 0,
-        }
-    ],
-    vertices : [],
+    developmentCards: {
+        VICTORY_POINT: number,
+        KNIGHT: number,
+        MONOPOLY: number,
+        YEAR_OF_PLENTY: number,
+        ROAD_BUILDING: number
+    },
+    passcode: string
+    playerName: string
+    secretVictoryPoints: number
+    specialCards: {
+        LARGEST_ARMY: number,
+        LONGEST_ROAD: number
+    }
+    victoryPoints: number
 }
 
 const App = () => {
@@ -200,19 +57,50 @@ const App = () => {
     const [isDeckOpen, setDeckOpen] = useState(false);
     const [isControlsVisible, setControlsVisible] = useState(false);
     const [isRulesVisible, setRulesVisible] = useState(false);
+
+
+    const [isDiceVisible, setDiceVisible] = useState(false);
+    const [diceRoll, setDiceRoll] = useState(-1);
+    const [isStage1MessageVisible, setStage1MessageVisible] = useState(false);
+    const [isStage2MessageVisible, setStage2MessageVisible] = useState(false);
+    const [isStage3MessageVisible, setStage3MessageVisible] = useState(false);
+
     const [currentRoute, setCurrentRoute] = useState("title")
     const [startForm] = Form.useForm();
 
+    const [currentStage, setCurrentStage] = useState<1 | 2 | 3>(1);
+
     const [gameRulesMarkdown, setGameRulesMarkdown] = useState('');
 
-    const [currentUserData, setCurrentUserData] = useState<UserData>({} as UserData);
-    const [currentBoard, setCurrentBoard] = useState<BoardData>({} as BoardData);
+    const [currentPlayer, setCurrentPlayer] = useState<UserData>({} as UserData);
+
+    const [selectedEdges, setSelectedEdges] = useState<number[]>([])
+    const [selectedVertex, setSelectedVertex] = useState<number[]>([])
+
+    const [nodeData, setNodeData] = useState<NodeData | undefined>(undefined);
+    const [edgeData, setEdgeData] = useState<EdgeData | undefined>(undefined);
+    const [vertexData, setVertexData] = useState<VertexData | undefined>(undefined);
+
+    const [availableColors, setAvailableColors] = useState<("BLACK" | "WHITE" | "ORANGE" | "YELLOW" | "PURPLE" | "BLUE" | "GREEN")[]>(["BLACK", "BLUE", "GREEN", "ORANGE", "PURPLE", "WHITE", "YELLOW"]);
+    const [usedColors, setUsedColors] = useState<{ [key:string]: ("BLACK" | "WHITE" | "ORANGE" | "YELLOW" | "PURPLE" | "BLUE" | "GREEN")}>({});
+    const baseColors = ["BLACK", "BLUE", "GREEN", "ORANGE", "PURPLE", "WHITE", "YELLOW"];
+
+
+    function getPlayerData() {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/get-current-player`,
+            method: 'GET',
+        }).then(value => {
+            setCurrentPlayer(value.data);
+        })
+    }
 
     function getNames(values: any) {
         const arr: string[] = [];
         for (let val of values) {
             arr.push(val[' Name']);
         }
+        return arr;
     }
 
     function getPasscodes(values: any) {
@@ -220,6 +108,15 @@ const App = () => {
         for (let val of values) {
             arr.push(val[' Passcode']);
         }
+        return arr;
+    }
+
+    function getColors(values: any) {
+        const arr: string[] = [];
+        for (let val of values) {
+            arr.push(val[' Color']);
+        }
+        return arr;
     }
 
     const onSubmit = (values: FormInstance<{
@@ -237,39 +134,171 @@ const App = () => {
             //@ts-ignore
             playerNames: getNames(values.names),
             //@ts-ignore
-            playerPasscodes: getPasscodes(values.names)
+            playerPasscodes: getPasscodes(values.names),
+            //@ts-ignore
+            playerColors: getColors(values.names)
         }
         axios({
-            url: `www.localhost:${IPC_PORT_CATAN}/setup-names`,
-            method: 'GET',
+            url: `http://localhost:${IPC_PORT_CATAN}/setup-names`,
+            method: 'POST',
             data: form,
-        }).then(value=>{
-            console.log(value);
+        }).then(value => {
+            setCurrentRoute("app")
+            axios({
+                url: `http://localhost:${IPC_PORT_CATAN}/get-nodes`,
+                method: 'GET',
+            }).then((res) => {
+                console.log(res.data);
+                setNodeData(res.data);
+            })
+            axios({
+                url: `http://localhost:${IPC_PORT_CATAN}/get-edges`,
+                method: 'GET',
+            }).then((res) => {
+                console.log(res.data);
+                setEdgeData(res.data);
+            })
+            axios({
+                url: `http://localhost:${IPC_PORT_CATAN}/get-vertices`,
+                method: 'GET',
+            }).then((res) => {
+                console.log(res.data);
+                setVertexData(res.data);
+            })
+            setCurrentPlayer(value.data);
+            setStage1MessageVisible(true);
+            console.log(value.data);
         })
-        setCurrentRoute("app")
+        setCurrentRoute("loading")
     };
 
-    async function setGameRules(res: AxiosResponse<any,any>) {
+    async function setGameRules(res: AxiosResponse<any, any>) {
         setGameRulesMarkdown(res.data)
     }
 
-    useEffect(()=>{
-        if (dev) {
-            setCurrentBoard(devBoard)
-        }
-    })
+    function setSelectedVertexStage1() {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/can-build-settlement-first-turn`,
+            method: 'GET',
+        }).then(value => {
+            setSelectedVertex(value.data);
+        })
+    }
 
-    useEffect(()=>{
-        //axios('http://localhost:3000/game-rules.md')
-        //    .then(setGameRules)
-        //if (dev) {
-        //    
-        //}
-        //else {
-        //    axios('http://localhost:3000/api/current-player-data')
-        //        .then((res: AxiosResponse<UserData, UserData>)=>setCurrentUserData(res.data))
-        //}
-    })
+    function setSelectedEdgeStage1() {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/can-build-roads`,
+            method: 'GET',
+        }).then(value => {
+            setSelectedEdges(value.data);
+        })
+    }
+
+    async function registerSelectedVertex(vertexId: number): Promise<IVertexData> {
+        console.log("Hello World")
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/build-settlement`,
+            method: 'POST',
+            data: {
+                vertexId: vertexId
+            }
+        }).then(value => {
+            if (currentStage === 1 || currentStage === 2) {
+                console.log(value.data)
+                setVertexData(value.data);
+                setSelectedVertex([]);
+                info({
+                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a road adjacent to one of the vertices you just placed`}</Typography.Text>,
+                    okText: "Continue",
+                    icon: <></>,
+                    cancelButtonProps: { style: { display: 'none' } },
+                    onOk: setSelectedEdgeStage1,
+                    onCancel: setSelectedEdgeStage1,
+                })
+            }
+        })
+        return {} as IVertexData;
+    }
+
+    async function registerSelectedEdges(edgeId: number): Promise<IEdgeData> {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/build-road`,
+            method: 'POST',
+            data: {
+                edgeId: edgeId
+            }
+        }).then(value => {
+            if (currentStage === 1 || currentStage === 2) {
+                console.log(value.data)
+                setEdgeData(value.data);
+                setSelectedEdges([]);
+                endTurn();
+            }
+        })
+        return {} as IEdgeData;
+    }
+
+    function rollDice() {
+        axios(`http://localhost:${IPC_PORT_CATAN}/roll-dice`, {
+            method: 'GET',
+        })
+            .then(res=>{
+                setDiceRoll(res.data);
+                setDiceVisible(true);
+            })
+    }
+
+    function endTurn() {
+        axios(`http://localhost:${IPC_PORT_CATAN}/next-turn`, {
+            method: 'GET',
+        })
+            .then(res => {
+                setCurrentPlayer(res.data)
+                console.log(res.data)
+
+                axios(`http://localhost:${IPC_PORT_CATAN}/current-stage`, {
+                    method: 'GET',
+                })
+                    .then(res => {
+                        console.log(res);
+                        if (currentStage != res.data) {
+                            if (res.data == 2) {
+                                setCurrentStage(2);
+                                setStage2MessageVisible(true);
+                            }
+                            if (res.data == 3) {
+                                setCurrentStage(3);
+                                setStage3MessageVisible(true);
+                            }
+                        }
+                        else {
+                            if (currentStage == 1) {
+                                info({
+                                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' } },
+                                    onOk: setSelectedVertexStage1,
+                                    onCancel: setSelectedVertexStage1,
+                                })
+                            }
+                            else if (currentStage == 2) {
+                                info({
+                                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' } },
+                                    onOk: setSelectedVertexStage1,
+                                    onCancel: setSelectedVertexStage1,
+                                })
+                            }
+                            else {
+                                rollDice();
+                            }
+                        }
+                    })
+            })
+    }
 
     return (
         <TransitionGroup className="route">
@@ -290,7 +319,7 @@ const App = () => {
                             </Typography.Text>
                         </div>
                         <div className="title-start">
-                            <Button type="primary" onClick={()=>setCurrentRoute("start")}>
+                            <Button type="primary" onClick={() => setCurrentRoute("start")}>
                                 Start
                             </Button>
                         </div>
@@ -309,7 +338,7 @@ const App = () => {
                             </Typography.Title>
                             <Divider></Divider>
                             <Form
-                                labelCol={{ span: 12 }}
+                                labelCol={{ span: 12, offset: 2 }}
                                 wrapperCol={{ span: 32 }}
                                 form={startForm}
                                 onFinish={onSubmit}>
@@ -347,7 +376,7 @@ const App = () => {
                                     {(fields, { add, remove }) => (
                                         <>
                                             {fields.map(({ key, name, ...restField }) => (
-                                                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                                <Space key={key} style={{ width: 'auto', display: 'flex', marginBottom: 8 }} align="baseline">
                                                     <Form.Item
                                                         {...restField}
                                                         name={[name, ' Name']}
@@ -355,6 +384,36 @@ const App = () => {
                                                         rules={[{ required: true, message: 'Missing Name' }]}
                                                     >
                                                         <Input placeholder="Name" />
+                                                    </Form.Item>
+                                                    <Form.Item
+                                                        {...restField}
+                                                        name={[name, ' Color']}
+                                                        label={['Player ', name + 1, ' Color']}
+                                                        hasFeedback
+                                                        labelCol={{span:12, offset: 2}}
+                                                        rules={[{ required: true, message: 'Missing Color' }]}
+                                                    >
+                                                        <Select dropdownStyle={{textTransform: "lowercase"}} style={{minWidth: "8rem", textTransform: "lowercase"}} onSelect={(val: "BLACK" | "WHITE" | "ORANGE" | "YELLOW" | "PURPLE" | "BLUE" | "GREEN")=>{
+                                                            let tempUsedColors = usedColors;
+                                                            tempUsedColors[key] = val;
+                                                            setUsedColors(tempUsedColors);
+                                                            let arr: typeof baseColors = [];
+                                                            for (let color of baseColors) {
+                                                                let x = true;
+                                                                for (const e of Object.keys(usedColors)) {
+                                                                    if (color === usedColors[e]) {
+                                                                        x = false;
+                                                                    }
+                                                                }
+                                                                if (x) {
+                                                                    arr.push(color);
+                                                                }
+                                                            }
+                                                            //@ts-ignore
+                                                            setAvailableColors(arr);
+                                                        }}>
+                                                            {availableColors.map(color=><Option value={color}>{color.toLowerCase()}</Option>)}
+                                                        </Select>
                                                     </Form.Item>
                                                     <Form.Item
                                                         {...restField}
@@ -383,16 +442,27 @@ const App = () => {
                                     )}
                                 </Form.List>
                                 <Form.Item>
-                                <Button type="primary" htmlType="submit" onClick={
-                                    () => {
-                                        startForm.submit();
-                                    }
-                                }>
-                                    Start Game
-                                </Button>
+                                    <Button type="primary" htmlType="submit" onClick={
+                                        () => {
+                                            startForm.submit();
+                                        }
+                                    }>
+                                        Start Game
+                                    </Button>
                                 </Form.Item>
                             </Form>
                         </div>
+                    </div>
+                </CSSTransition>
+            }
+            {
+                currentRoute == "loading" &&
+                <CSSTransition timeout={0}
+                    unmountOnExit>
+                    <div className="loading-screen">
+                        <Spin spinning>
+
+                        </Spin>
                     </div>
                 </CSSTransition>
             }
@@ -411,32 +481,19 @@ const App = () => {
                                         Player Name:
                                     </Typography.Text>
                                     <Typography.Text strong editable={{
-                                        onChange: (newName)=>{
-                                            if (dev) {
-                                                setCurrentUserData(state=>{
-                                                    return {
-                                                        ...state,
-                                                        name: newName
-                                                    }
+                                        onChange: (newName) => {
+                                            axios(`http://localhost:${IPC_PORT_CATAN}/set-name`, {
+                                                method: 'POST',
+                                                data: {
+                                                    name: newName
+                                                }
+                                            })
+                                                .then(res => {
+                                                    setCurrentPlayer(res.data)
                                                 })
-                                            }
-                                            else {
-                                                axios('http://localhost:3000/api/change-name', {
-                                                    method: 'POST',
-                                                    data: 'user'
-                                                })
-                                                    .then(res=>{
-                                                        setCurrentUserData(state=>{
-                                                            return {
-                                                                ...state,
-                                                                name: newName
-                                                            }
-                                                        })
-                                                    })
-                                            }
                                         }
                                     }}>
-                                        {currentUserData.name}
+                                        {currentPlayer.playerName}
                                     </Typography.Text>
                                 </div>
                                 <div className="group">
@@ -465,7 +522,7 @@ const App = () => {
                                     </Button>
                                     <Popconfirm
                                         title="Are you sure you would like to complete your turn?"
-                                        onConfirm={() => undefined}
+                                        onConfirm={() => endTurn()}
                                         onCancel={() => undefined}
                                         okText="Pass the Dice"
                                         cancelText="Continue Turn"
@@ -502,7 +559,14 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
-                        <Board boardData={currentBoard} changeFn={setCurrentBoard}></Board>
+                        <Board 
+                            edgeRegistrationFn={registerSelectedEdges} 
+                            vertexRegistrationFn={registerSelectedVertex} 
+                            selectedEdges={selectedEdges} 
+                            selectedVertex={selectedVertex}
+                            nodeData={nodeData!}
+                            edgeData={edgeData!}
+                            vertexData={vertexData!}></Board>
                         <Drawer
                             title="Trade Cards"
                             placement="right"
@@ -603,7 +667,7 @@ const App = () => {
                             }
                             className="VScroll"
                         >
-                            <Deck>
+                            <Deck userData={currentPlayer}>
 
                             </Deck>
                         </Drawer>
@@ -639,6 +703,118 @@ const App = () => {
                             }
                             className="VScroll">
                             <ReactMarkdown children={gameRulesMarkdown} />
+                        </Modal>
+                        <Modal
+                            title="Rolled Dice"
+                            visible={isDiceVisible}
+                            onOk={() => setDiceVisible(false)}
+                            onCancel={() => setDiceVisible(false)}
+                            width="1000px"
+                            footer={
+                                <Button type="primary" onClick={() => setDiceVisible(false)}>
+                                    Close
+                                </Button>
+                            }
+                            className="VScroll">
+                            <Typography.Title>
+                                You Rolled a {diceRoll}
+                            </Typography.Title>
+                        </Modal>
+                        <Modal
+                            title="Stage 1"
+                            visible={isStage1MessageVisible}
+                            onOk={() => { 
+                                setStage1MessageVisible(false)
+                                info({
+                                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' } },
+                                    onOk: setSelectedVertexStage1,
+                                    onCancel: setSelectedVertexStage1,
+                                })                            }}
+                            onCancel={() => { 
+                                setStage1MessageVisible(false)
+                                info({
+                                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' }, },
+                                    onOk: setSelectedVertexStage1,
+                                    onCancel: setSelectedVertexStage1,
+                                })
+                            }}
+                            width="1000px"
+                            okText="Continue"
+                            cancelButtonProps={{ style: { display: 'none' } }}
+                            className="VScroll">
+                            <Typography.Title>
+                                Welcome to Island of Catan Explorers!
+                            </Typography.Title>
+                            <Typography.Paragraph>
+                                In the first stage of the game, there will be a round in which
+                                each and every player will place down 1 settlement and 1 road
+                            </Typography.Paragraph>
+                        </Modal>
+                        <Modal
+                            title="Stage 2"
+                            visible={isStage2MessageVisible}
+                            onOk={() => { 
+                                setStage2MessageVisible(false)
+                                info({
+                                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' } },
+                                    onOk: setSelectedVertexStage1,
+                                    onCancel: setSelectedVertexStage1,
+                                })                            }}
+                            onCancel={() => { 
+                                setStage2MessageVisible(false)
+                                info({
+                                    content: <Typography.Text style={{fontSize: 18}} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' }, },
+                                    onOk: setSelectedVertexStage1,
+                                    onCancel: setSelectedVertexStage1,
+                                })
+                            }}
+                            width="1000px"
+                            okText="Continue"
+                            cancelButtonProps={{ style: { display: 'none' } }}
+                            className="VScroll">
+                            <Typography.Title>
+                                That was Quick! Now to the Second Stage.
+                            </Typography.Title>
+                            <Typography.Paragraph>
+                                In the second stage of the game, there will be a round in which
+                                we will go in reverse and each player will place down another road
+                                and settlement
+                            </Typography.Paragraph>
+                        </Modal>
+                        <Modal
+                            title="Stage 3"
+                            visible={isStage3MessageVisible}
+                            onOk={() => { 
+                                setStage3MessageVisible(false)
+                                rollDice()
+                            }}
+                            onCancel={() => {
+                                setStage3MessageVisible(false)
+                                rollDice();
+                            }}
+                            width="1000px"
+                            okText="Continue"
+                            cancelButtonProps={{ style: { display: 'none' } }}
+                            className="VScroll">
+                            <Typography.Title>
+                                The Game Lies Ahead Good Luck
+                            </Typography.Title>
+                            <Typography.Paragraph>
+                                In the third stage of the game, explorers will be competing to attain 10
+                                points the fastest. Good Luck!
+                            </Typography.Paragraph>
                         </Modal>
                     </div>
                 </CSSTransition>

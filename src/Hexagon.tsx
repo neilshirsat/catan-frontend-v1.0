@@ -1,14 +1,17 @@
 import './hex.less'
 
-function imageAssociatedWithResource(resourceType: 'mountain' | 'pasture' | 'field' | 'desert' | 'hill' | 'forest') {
+function imageAssociatedWithResource(resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT") {
     switch (resourceType) {
-        case 'mountain': return './catan-images/mountain-tile.png'
-        case 'field': return './catan-images/field-tile.png'
-        case 'forest': return './catan-images/forest-tile.png'
-        case 'hill': return './catan-images/hill-tile.png'
-        case 'pasture': return './catan-images/pasture-tile.png'
-        case 'desert': return './catan-images/desert-tile.png'
+        case 'MOUNTAINS': return './catan-images/mountain-tile.png'
+        case 'FIELDS': return './catan-images/field-tile.png'
+        case 'FOREST': return './catan-images/forest-tile.png'
+        case 'HILLS': return './catan-images/hill-tile.png'
+        case 'PASTURE': return './catan-images/pasture-tile.png'
+        case 'DESERT': return './catan-images/desert-tile.png'
     }
+    console.error('imageAssociatedWithResource DOESNT WORK')
+    console.error(resourceType)
+    return 'error'
 }
 
 function getDots(num: number) {
@@ -29,14 +32,14 @@ function getDots(num: number) {
 
 const Hexagon: React.FC<{
     num: number,
-    resourceType: 'mountain' | 'pasture' | 'field' | 'desert' | 'hill' | 'forest'
+    resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT"
 }> = (props) => {
     return (<div
         className="hex-wrapper">
         <div
             className="hex">
             {
-                props.resourceType !== 'desert' ?
+                props.resourceType !== 'DESERT' ?
                     <div className="center">
                         <div className={`title title-${props.num}`}>
                             {props.num}
