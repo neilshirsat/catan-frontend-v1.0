@@ -11,6 +11,7 @@
     justify-content: center;
     user-select: none;
     -webkit-user-drag: none;
+    position: relative;
 
     .title {
         height: 1.5rem;
@@ -52,6 +53,8 @@
         height: 0.5rem;
         margin-bottom: 0.5rem;
     }
+
+    
 }
 
 .picture {
@@ -60,4 +63,49 @@
     width: 100%;
     user-select: none;
     -webkit-user-drag: none;
+}
+
+.overlay {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    padding-top: 20%;
+    justify-content: center;
+    z-index: 1;
+
+    &.robber {
+        padding-top: 12%;
+    }
+
+    .robber {
+        width: 1.5rem;
+    }
+
+    .input-circle {
+        height: 1.5rem;
+        width: 1.5rem;
+
+        border-radius: 100%;
+        animation: glow 1s ease-in-out infinite alternate;
+
+        cursor: pointer;
+        transition: transform 400ms;
+
+        background-color: #cfac62;
+
+        &:hover {
+            transform: scale(2);
+            animation: none;
+            box-shadow: #0056796a 0 0 1px 2px;
+        }
+
+        &:active {
+            transform: scale(1.1);
+            animation: none;
+            box-shadow: #0056796a 0 0 4px 4px;
+        }
+    }
 }

@@ -4,7 +4,15 @@ import { UserData } from './App';
 import './Deck.less'
 import GameCard from './GameCard';
 
-function getCardImage() { }
+function getCardImage(card: keyof UserData['deck']) {
+    switch (card) {
+        case "BRICK" : return "Brick.png";
+        case "LUMBER" : return "Lumber.png";
+        case "ORE" : return "Ore.png";
+        case "WHEAT" : return "Wheat.png";
+        case "WOOL" : return "Wool.png";
+    }
+}
 
 function doesUserHaveCards(userData: UserData): boolean {
     for (const e in userData.deck) {
@@ -40,7 +48,7 @@ const Deck: React.FC<{
                             return <></>
                         }
                         //@ts-ignore
-                        return <GameCard title={val} count={props.userData.deck[val]}>
+                        return <GameCard img={getCardImage(val)} title={val} count={props.userData.deck[val]}>
                         </GameCard>
                     })}
                     {Object.keys(props.userData.developmentCards).map((val) => {

@@ -1,3 +1,4 @@
+import { INodeData } from './Board'
 import './hex.less'
 
 function imageAssociatedWithResource(resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT") {
@@ -9,8 +10,8 @@ function imageAssociatedWithResource(resourceType: "HILLS" | "FOREST" | "MOUNTAI
         case 'PASTURE': return './catan-images/pasture-tile.png'
         case 'DESERT': return './catan-images/desert-tile.png'
     }
-    console.error('imageAssociatedWithResource DOESNT WORK')
-    console.error(resourceType)
+    //console.error('imageAssociatedWithResource DOESNT WORK')
+    //console.error(resourceType)
     return 'error'
 }
 
@@ -32,12 +33,27 @@ function getDots(num: number) {
 
 const Hexagon: React.FC<{
     num: number,
+    nodeData: INodeData,
+    selected: boolean,
+    nodeId: number,
+    registrationFn: (nodeId: number) => Promise<INodeData>,
     resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT"
 }> = (props) => {
     return (<div
         className="hex-wrapper">
         <div
             className="hex">
+            {
+                props.nodeData.hasRobber ?
+                    <div className='overlay robber'>
+                        <div>
+                            <svg className='robber' viewBox="0 0 300 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M70.8131 221.723C42.8456 198.799 25 163.984 25 125C25 55.9644 80.9644 0 150 0C219.036 0 275 55.9644 275 125C275 163.984 257.154 198.799 229.187 221.723L300 420H0L70.8131 221.723Z" fill="#6A6A6A" />
+                            </svg>
+                        </div>
+                    </div>
+                : <></>
+            }
             {
                 props.resourceType !== 'DESERT' ?
                     <div className="center">
@@ -46,6 +62,15 @@ const Hexagon: React.FC<{
                         </div>
                         <div className="dots">
                             {getDots(props.num)}
+                        </div>
+                    </div>
+                    : <></>
+            }
+            {
+                props.selected ?
+                    <div className="overlay">
+                        <div className="input-circle" onClick={() => props.registrationFn(props.nodeId)}>
+
                         </div>
                     </div>
                     : <></>

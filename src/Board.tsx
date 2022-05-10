@@ -1474,11 +1474,6 @@ const DroppableEdge: React.FC<{
     edgeData: IEdgeData,
     registrationFn: (id: number) => Promise<IEdgeData>,
 }> = (props) => {
-    const droppable = useDroppable({
-        id: props.id
-    });
-    const [state, setState] = useState(false);
-    console.log(`Edge Data ${props.edgeData}`)
     return (
         <div
             className={`edge`}
@@ -1487,7 +1482,6 @@ const DroppableEdge: React.FC<{
                 left: `calc((((var(--hex-width) + ${props.edge.leftSmallOffset}px ) * ${props.edge.leftPosition}) + ${props.edge.UNSAFE_LEFT_OFFSET}px + 1rem ) + (var(--hex-width) * ${props.edge.offsetLeftM} + ${props.edge.offsetLeftR}px))`,
                 transform: `rotate(${props.edge.angle}deg)`,
             }}
-            ref={droppable.setNodeRef}
         >
             {
                 props.selected ?
@@ -1513,9 +1507,6 @@ const DroppableVertex: React.FC<{
     vertexData: IVertexData,
     registrationFn: (id: number) => Promise<IVertexData>,
 }> = (props) => {
-    const droppable = useDroppable({
-        id: props.id
-    });
     return (
         <div
             className="vertex"
@@ -1523,7 +1514,6 @@ const DroppableVertex: React.FC<{
                 top: `calc(((var(--hex-height) * ${props.vertex.line}) + 1rem) + ( var(--hex-height) * ${props.vertex.offsetTop} ))`,
                 left: `calc((((var(--hex-width) + ${props.vertex.leftSmallOffset}px ) * ${props.vertex.leftPosition}) + ${props.vertex.UNSAFE_LEFT_OFFSET}px + 1rem ) + (var(--hex-width) * ${props.vertex.offsetLeftM} + ${props.vertex.offsetLeftR}px))`,
             }}
-            ref={droppable.setNodeRef}
         >
             {
                 props.selected ?
@@ -1536,11 +1526,15 @@ const DroppableVertex: React.FC<{
                 props.vertexData.vertexType === "SETTLEMENT" ?
                     <div className={`settlement ${props.vertexData.controlledPlayer.color}`}>
                         <svg viewBox="0 0 75 85" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M38.5238 0.708418C37.5389 -0.250095 35.965 -0.233909 35.0001 0.744658L1.0035 35.2209C0.98758 35.237 0.971944 35.2533 0.956586 35.2696C0.382802 35.6212 0 36.254 0 36.9762V84.9762H74.9876V37.0762C74.9876 36.3844 74.6531 35.7707 74.137 35.3881C74.0788 35.3184 74.0159 35.2505 73.9483 35.1846L38.5238 0.708418Z"/>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M38.5238 0.708418C37.5389 -0.250095 35.965 -0.233909 35.0001 0.744658L1.0035 35.2209C0.98758 35.237 0.971944 35.2533 0.956586 35.2696C0.382802 35.6212 0 36.254 0 36.9762V84.9762H74.9876V37.0762C74.9876 36.3844 74.6531 35.7707 74.137 35.3881C74.0788 35.3184 74.0159 35.2505 73.9483 35.1846L38.5238 0.708418Z" />
                         </svg>
                     </div>
                     : props.vertexData.vertexType === 'CITY' ?
-                        <div className={`city ${props.vertexData.controlledPlayer.color}`}></div>
+                        <div className={`settlement ${props.vertexData.controlledPlayer.color}`}>
+                            <svg viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M51.6051 21.087C50.6006 19.6209 48.4301 19.6416 47.4538 21.1265L25.418 54.6409C25.1775 55.0068 25.0476 55.3992 25.0126 55.7888C25.0043 55.8628 25 55.9381 25 56.0144V79.0144V127.014C25 128.119 25.8954 129.014 27 129.014H173C174.105 129.014 175 128.119 175 127.014V81.0144C175 79.9098 174.105 79.0144 173 79.0144H75V56.2079C75.044 55.671 74.9137 55.1085 74.5664 54.6014L51.6051 21.087Z" />
+                            </svg>
+                        </div>
                         : <></>
             }
         </div>
@@ -1550,9 +1544,6 @@ const DroppableVertex: React.FC<{
 const Road: React.FC<{
     id: string
 }> = (props) => {
-    const draggable = useDraggable({
-        id: props.id
-    });
     const [state, setState] = useState(false);
     return (
         <div
@@ -1620,51 +1611,61 @@ export type VertexData = IVertexData[];
 const Board: React.FC<{
     selectedEdges: number[],
     selectedVertex: number[],
+    selectedNodes: number[],
     nodeData: NodeData,
     edgeData: EdgeData,
     vertexData: VertexData,
     edgeRegistrationFn: (id: number) => Promise<IEdgeData>,
     vertexRegistrationFn: (id: number) => Promise<IVertexData>,
+    nodeRegistrationFn: (id: number) => Promise<INodeData>,
 }> = (props) => {
+    //console.log(props.nodeData);
+    //console.log(props.nodeData.length)
+    //console.log(props.nodeData[0])
     return ((props.nodeData != undefined && props.edgeData != undefined && props.vertexData != undefined) ?
         (<main className="board-root">
-            <DndContext>
-                <div className="container">
-                    {
-                        points.map(line => {
-                            return (
-                                <div className="line">
-                                    {
-                                        line.map(hex => {
-                                            return (
-                                                <Hexagon
-                                                    num={props.nodeData[hex.nodeId - 1].numberPieces}
-                                                    resourceType={props.nodeData[hex.nodeId - 1].resource}>
+            <div className="container">
+                {
+                    points.map(line => {
+                        return (
+                            <div className="line">
+                                {
+                                    line.map(hex => {
+                                        //console.log(props.selectedNodes)
+                                        //console.log(hex.nodeId)
+                                        //console.log(props.nodeData[hex.nodeId])
+                                        return (
+                                            <Hexagon
+                                                nodeId={hex.nodeId}
+                                                nodeData={props.nodeData[hex.nodeId - 1]}
+                                                registrationFn={props.nodeRegistrationFn}
+                                                selected={props.selectedNodes.indexOf(hex.nodeId) != -1}
+                                                num={props.nodeData[hex.nodeId - 1].numberPieces}
+                                                resourceType={props.nodeData[hex.nodeId - 1].resource}>
 
-                                                </Hexagon>
-                                            )
-                                        })
-                                    }
-                                </div>
-                            )
-                        })
-                    }
-                    {
-                        edges.map((edge, key) =>
-                            <DroppableEdge registrationFn={props.edgeRegistrationFn} selected={props.selectedEdges.indexOf(edge.edgeId) != -1} edgeData={props.edgeData[edge.edgeId - 1]} id={key.toString()} edge={edge}>
-
-                            </DroppableEdge>
+                                            </Hexagon>
+                                        )
+                                    })
+                                }
+                            </div>
                         )
-                    }
-                    {
-                        vertices.map((vertex, key) =>
-                            <DroppableVertex registrationFn={props.vertexRegistrationFn} selected={props.selectedVertex.indexOf(vertex.vertexId) != -1} vertexData={props.vertexData[vertex.vertexId - 1]} id={key.toString()} vertex={vertex}>
+                    })
+                }
+                {
+                    edges.map((edge, key) =>
+                        <DroppableEdge registrationFn={props.edgeRegistrationFn} selected={props.selectedEdges.indexOf(edge.edgeId) != -1} edgeData={props.edgeData[edge.edgeId - 1]} id={key.toString()} edge={edge}>
 
-                            </DroppableVertex>
-                        )
-                    }
-                </div>
-            </DndContext>
+                        </DroppableEdge>
+                    )
+                }
+                {
+                    vertices.map((vertex, key) =>
+                        <DroppableVertex registrationFn={props.vertexRegistrationFn} selected={props.selectedVertex.indexOf(vertex.vertexId) != -1} vertexData={props.vertexData[vertex.vertexId - 1]} id={key.toString()} vertex={vertex}>
+
+                        </DroppableVertex>
+                    )
+                }
+            </div>
         </main>) : <></>)
 }
 

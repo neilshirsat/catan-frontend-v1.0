@@ -12,7 +12,7 @@ const GameCard: React.FC<{
         <div className="card">
             <div className="card-title">
                 <Typography.Title level={3} className="tg">
-                    {props.title}
+                    {props.title.toLowerCase()}
                 </Typography.Title>
             </div>
             <div className="cover">
