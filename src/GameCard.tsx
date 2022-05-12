@@ -72,8 +72,9 @@ const GameCard: React.FC<{
                         <Typography.Title level={5} style={{ display: 'block', textAlign: 'center' }}>
                             Description
                         </Typography.Title>
-                        <Divider></Divider>
-                        {props.description}
+                        <Typography.Paragraph>
+                            {props.description}
+                        </Typography.Paragraph>
                     </div>
                 })
             }}></img>

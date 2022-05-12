@@ -467,6 +467,7 @@ const App = () => {
                     setSelectedEdges([]);
                     setCurrentRoadBuildingCards([]);
                     setIsBuildingRoad(false);
+                    getPlayerData()
                 })
                 return {} as IEdgeData;
             }
@@ -489,6 +490,7 @@ const App = () => {
                 setSelectedEdges([]);
                 setHasBuilt(true);
                 setIsBuildingRoad(false)
+                getPlayerData()
             }
         })
         return {} as IEdgeData;
@@ -662,7 +664,7 @@ const App = () => {
                             <Divider></Divider>
                             <Space style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                                 {
-                                    playersToRob.map(val => <Button type="primary" onClick={() => {
+                                    (res.data as typeof playersToRob).map(val => <Button type="primary" onClick={() => {
 
                                         if (isPlayingKnightCard) {
                                             axios(`http://localhost:${IPC_PORT_CATAN}/use-knight`, {
@@ -679,6 +681,7 @@ const App = () => {
                                                     })
                                                     setPlayingKnightCard(false);
                                                 })
+                                            dialog.destroy();
                                             return;
                                         }
 
@@ -694,12 +697,13 @@ const App = () => {
                                                     message: `Player ${currentPlayer.playerName} stole a ${formatedCardName(res.data)} from ${val.playerName}`
                                                 })
                                             })
+                                            dialog.destroy();
                                     }}>
                                         {val.playerName}
                                     </Button>)
                                 }
                                 {
-                                    playersToRob.length <= 0 ?
+                                    res.data.length <= 0 ?
                                         <>
                                             <div>
                                                 <Typography.Text strong>No One to Rob.</Typography.Text>
@@ -880,7 +884,7 @@ const App = () => {
                     if (sum > 0 && p1Sum > 0 && p2Sum > 0) {
                         setCurrentTrades([
                             ...currentTrades,
-                            {                                
+                            {
                                 tradeOutgoing: {
                                     BRICK: instance['outgoing-brick'],
                                     LUMBER: instance['outgoing-lumber'],
@@ -1001,6 +1005,7 @@ const App = () => {
             okText: "Continue",
             icon: <></>,
             cancelButtonProps: { style: { display: 'none' } },
+            okButtonProps: { style: { display: 'none' } },
             onOk: finishTrade,
             onCancel: () => tradeForm.submit(),
         })
@@ -1100,9 +1105,12 @@ const App = () => {
                     url: `http://localhost:${IPC_PORT_CATAN}/trade`,
                     method: 'POST',
                     data: {
+                        tradeOutgoing: trade.tradeOutgoing,
+                        tradeIngoing: trade.tradeIngoing,
+                        playerId: currentPlayer.id
                     }
                 }).then(value => {
-                    setCurrentTrades(value.data);
+                    setCurrentPlayer(value.data)
                 })
             },
             onCancel: () => {
@@ -1445,7 +1453,7 @@ const App = () => {
                         <div className="app-sidebar VScroll">
                             <div className="panel">
                                 <Typography.Title level={3}>
-                                    Turn
+                                    Player {currentPlayer.id}'s Turn
                                 </Typography.Title>
                                 <div className="group">
                                     <Typography.Text className="group-title">
@@ -1473,6 +1481,15 @@ const App = () => {
                                     </Typography.Text>
                                     <Typography.Text strong>
                                         <Timer></Timer>
+                                    </Typography.Text>
+
+                                </div>
+                                <div className="group">
+                                    <Typography.Text className="group-title">
+                                        Victory Points:
+                                    </Typography.Text>
+                                    <Typography.Text strong>
+                                        {currentPlayer.victoryPoints}
                                     </Typography.Text>
 
                                 </div>
@@ -1525,6 +1542,21 @@ const App = () => {
                                         console.log(isLoadingAmountLeft);
                                     }}>
                                         Game Statistics
+                                    </Button>
+                                    <Button type="ghost" onClick={() => {
+                                        info({
+                                            width: "1000px",
+                                            //@ts-ignore
+                                            content: <>
+                                                <Typography.Title style={{ textAlign: 'center' }} level={5}>Victory Points: {currentPlayer.victoryPoints}</Typography.Title>
+                                                <Typography.Title style={{ textAlign: 'center' }} level={5}>Secret Victory Points: {currentPlayer.secretVictoryPoints}</Typography.Title>
+                                            </>,
+                                            okText: "Ok",
+                                            icon: <></>,
+                                            cancelButtonProps: { style: { display: 'none' }, },
+                                        })
+                                    }}>
+                                        View Secret Victory Points
                                     </Button>
                                     <Button type="ghost" onClick={() => setDevelopmentCardsOpen(true)}>
                                         Development Cards
@@ -1628,6 +1660,7 @@ const App = () => {
                         {
                             nodeData && edgeData && vertexData
                                 ? <Board
+                                    portList={portList}
                                     edgeRegistrationFn={registerSelectedEdges}
                                     vertexRegistrationFn={registerSelectedVertex}
                                     nodeRegistrationFn={registerSelectedNode}
@@ -2146,10 +2179,10 @@ const App = () => {
                                     currentPlayer.developmentCards.VICTORY_POINT <= 0 ? <></> :
                                         <GameCard
                                             title="Victory Point Cards"
-                                            img=""
+                                            img="victory-point-card.png"
                                             count={currentPlayer.developmentCards.VICTORY_POINT}
                                             description={<Typography.Paragraph>
-
+                                                secretly adds a point that counts toward total score; not visible to other player
                                             </Typography.Paragraph>}
                                         >
 
@@ -2159,10 +2192,10 @@ const App = () => {
                                     currentPlayer.developmentCards.KNIGHT <= 0 ? <></> :
                                         <GameCard
                                             title="Knight Card"
-                                            img=""
+                                            img="knight.png"
                                             count={currentPlayer.developmentCards.KNIGHT}
                                             description={<Typography.Paragraph>
-
+                                                Moves the robber to any hex; blocks resource and can steal from selected player
                                             </Typography.Paragraph>}
                                             action={<Button onClick={() => fnUseKnight()}>
                                                 Use 1 Knight Card
@@ -2174,10 +2207,10 @@ const App = () => {
                                     currentPlayer.developmentCards.MONOPOLY <= 0 ? <></> :
                                         <GameCard
                                             title="Monopoly Card"
-                                            img=""
+                                            img="monopoly.png"
                                             count={currentPlayer.developmentCards.MONOPOLY}
                                             description={<Typography.Paragraph>
-
+                                                select a resource and all players have to give you that resource
                                             </Typography.Paragraph>}
                                             action={<Button onClick={() => {
                                                 info({
@@ -2226,10 +2259,10 @@ const App = () => {
                                     currentPlayer.developmentCards.YEAR_OF_PLENTY <= 0 ? <></> :
                                         <GameCard
                                             title="Year of Plenty Card"
-                                            img=""
+                                            img="year-of-plenty-card.png"
                                             count={currentPlayer.developmentCards.YEAR_OF_PLENTY}
                                             description={<Typography.Paragraph>
-
+                                                take any 2 resource cards from supply stack
                                             </Typography.Paragraph>}
                                             action={<Button onClick={() => {
                                                 info({
@@ -2286,10 +2319,10 @@ const App = () => {
                                     currentPlayer.developmentCards.ROAD_BUILDING <= 0 ? <></> :
                                         <GameCard
                                             title="Road Building Card"
-                                            img=""
+                                            img="road-building-card.png"
                                             count={currentPlayer.developmentCards.ROAD_BUILDING}
                                             description={<Typography.Paragraph>
-
+                                                Build 2 roads without using resource cards
                                             </Typography.Paragraph>}
                                             action={<Button onClick={() => fnUseRoadBuilding()}>
                                                 Use 1 Road Building Card
@@ -2299,8 +2332,8 @@ const App = () => {
                                 }
                                 {
                                     (currentPlayer.developmentCards.KNIGHT <= 0 && currentPlayer.developmentCards.MONOPOLY <= 0 && currentPlayer.developmentCards.ROAD_BUILDING <= 0 && currentPlayer.developmentCards.VICTORY_POINT <= 0 && currentPlayer.developmentCards.YEAR_OF_PLENTY <= 0)
-                                    ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="You Dont Have Any Development Cards"></Empty>
-                                    : <></>
+                                        ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="You Dont Have Any Development Cards"></Empty>
+                                        : <></>
                                 }
                             </div>
                         </Drawer>

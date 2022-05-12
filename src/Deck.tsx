@@ -11,8 +11,8 @@ function getCardImage(card: keyof UserData['deck'] | keyof UserData['specialCard
         case "ORE" : return "Ore.png";
         case "WHEAT" : return "Wheat.png";
         case "WOOL" : return "Wool.png";
-        case "LARGEST_ARMY": return "Largest Army";
-        case "LONGEST_ROAD": return "Longest Road";
+        case "LARGEST_ARMY": return "Largest Army.png";
+        case "LONGEST_ROAD": return "Longest Road.png";
     }
 }
 
@@ -38,37 +38,37 @@ function getDescription(card: keyof UserData['deck'] | keyof UserData['specialCa
     switch(card) {
         case "BRICK": return (<>
             <Typography.Paragraph>
-                
+            Produced by hills; used to build roads and settlements
             </Typography.Paragraph>
         </>);
         case "LUMBER": return (<>
             <Typography.Paragraph>
-
+            Produced by forest; used to build roads and settlements
             </Typography.Paragraph>
         </>);
         case "ORE": return (<>
             <Typography.Paragraph>
-
+            Produced by mountains; used to build cities and buy development cards
             </Typography.Paragraph>
         </>);
         case "WHEAT": return (<>
             <Typography.Paragraph>
-
+            produced by fields; used to build cities and settlements and buy development cards
             </Typography.Paragraph>
         </>);
         case "WOOL": return (<>
             <Typography.Paragraph>
-
+            produced by pastures; used to build settlement and development cards
             </Typography.Paragraph>
         </>);
         case "LARGEST_ARMY": return (<>
             <Typography.Paragraph>
-
+            Player who has a longest road out of all players; has to have at least a legal road length of 5 or greater
             </Typography.Paragraph>
         </>);
         case "LONGEST_ROAD": return (<>
             <Typography.Paragraph>
-
+            Player who has the largest army size of all players; has to have an army size of 3 or greater
             </Typography.Paragraph>
         </>);
     }

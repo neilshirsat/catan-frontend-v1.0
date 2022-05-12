@@ -1469,134 +1469,124 @@ const vertices: {
     ]
 
 const ports: {
-    vertex1: number,
-    vertex2: number,
     angle: number,
     line: number,
     offsetTop: number,
-    offsetTopAdd: number,
     leftPosition: number,
     leftSmallOffset: number,
     UNSAFE_LEFT_OFFSET: number,
     offsetLeftR: number,
     offsetLeftM: number,
+    OFFSET_HORT: number,
+    OFFSET_VERT: number,
 }[] = [
         {
-            vertex1: 1,
-            vertex2: 4,
+            angle: -30,
+            line: 0,
+            offsetTop: -0.125,
+            leftPosition: 0.25,
+            leftSmallOffset: 0,
+            UNSAFE_LEFT_OFFSET: -10,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+            OFFSET_HORT: -0.6,
+            OFFSET_VERT: -0.3,
+        },
+        {
             angle: 30,
-            line: -0.32,
-            offsetTop: 1.2,
-            offsetTopAdd: 0,
-            leftPosition: 1.5,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 12,
+            line: 0,
+            offsetTop: -0.125,
+            leftPosition: 1.75,
+            leftSmallOffset: 0,
+            UNSAFE_LEFT_OFFSET: -10,
             offsetLeftM: 1,
             offsetLeftR: 0,
+            OFFSET_HORT: -0.25,
+            OFFSET_VERT: -0.25,
         },
         {
-            vertex1: 1,
-            vertex2: 4,
-            angle: 330,
-            line: -0.32,
-            offsetTop: 1.2,
-            offsetTopAdd: 0,
-            leftPosition: -0.25,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 15,
+            angle: 30,
+            line: 0.75,
+            offsetTop: -0.125,
+            leftPosition: 3.25,
+            leftSmallOffset: 0,
+            UNSAFE_LEFT_OFFSET: -10,
             offsetLeftM: 1,
             offsetLeftR: 0,
+            OFFSET_HORT: -0.15,
+            OFFSET_VERT: -0.27,
         },
         {
-            vertex1: 1,
-            vertex2: 4,
-            angle: 270,
+            angle: -90,
             line: 1,
-            offsetTop: 0.3,
-            offsetTopAdd: 0.3,
-            leftPosition: -1,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 2,
+            offsetTop: 0,
+            leftPosition: -0.5,
+            leftSmallOffset: 20,
+            UNSAFE_LEFT_OFFSET: 0,
             offsetLeftM: 1,
             offsetLeftR: 0,
+            OFFSET_HORT: -0.8,
+            OFFSET_VERT: 0.05,
         },
         {
-            vertex1: 1,
-            vertex2: 4,
-            angle: 270,
-            line: 2.5,
-            offsetTop: 0.3,
-            offsetTopAdd: 0.3,
-            leftPosition: -1,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 2,
-            offsetLeftM: 1,
-            offsetLeftR: 0,
-        },
-        {
-            vertex1: 1,
-            vertex2: 4,
-            angle: 30,
-            line: 0.45,
-            offsetTop: 1,
-            offsetTopAdd: 0,
-            leftPosition: 3,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 17,
-            offsetLeftM: 1,
-            offsetLeftR: 0,
-        },
-        {
-            vertex1: 1,
-            vertex2: 4,
             angle: 90,
             line: 1.75,
-            offsetTop: 0.3,
-            offsetTopAdd: 0,
+            offsetTop: 0,
             leftPosition: 4,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: -3,
+            leftSmallOffset: -2.5,
+            UNSAFE_LEFT_OFFSET: 0,
             offsetLeftM: 1,
             offsetLeftR: 0,
+            OFFSET_HORT: 0,
+            OFFSET_VERT: 0,
         },
         {
-            vertex1: 1,
-            vertex2: 4,
+            angle: 270,
+            line: 2.5,
+            offsetTop: 0,
+            leftPosition: -0.5,
+            leftSmallOffset: 20,
+            UNSAFE_LEFT_OFFSET: 0,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+            OFFSET_HORT: -0.8,
+            OFFSET_VERT: 0.05,
+        },
+        {
             angle: 150,
             line: 3,
-            offsetTop: 0.75,
-            offsetTopAdd: 0,
-            leftPosition: 3,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 17,
+            offsetTop: -0.125,
+            leftPosition: 3.25,
+            leftSmallOffset: 0,
+            UNSAFE_LEFT_OFFSET: -10,
             offsetLeftM: 1,
             offsetLeftR: 0,
+            OFFSET_HORT: -0.15,
+            OFFSET_VERT: 0.4,
         },
         {
-            vertex1: 1,
-            vertex2: 4,
+            angle: -150,
+            line: 3.75,
+            offsetTop: -0.125,
+            leftPosition: 0.25,
+            leftSmallOffset: 0,
+            UNSAFE_LEFT_OFFSET: -10,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+            OFFSET_HORT: -0.6,
+            OFFSET_VERT: 0.42,
+        },
+        {
             angle: 150,
             line: 3.75,
-            offsetTop: 0.66,
-            offsetTopAdd: 0,
-            leftPosition: 1.5,
-            leftSmallOffset: 3,
-            UNSAFE_LEFT_OFFSET: 3,
+            offsetTop: -0.125,
+            leftPosition: 1.75,
+            leftSmallOffset: 0,
+            UNSAFE_LEFT_OFFSET: -10,
             offsetLeftM: 1,
             offsetLeftR: 0,
-        },
-        {
-            vertex1: 1,
-            vertex2: 4,
-            angle: 210,
-            line: 3.75,
-            offsetTop: 0.5,
-            offsetTopAdd: 0,
-            leftPosition: -0.25,
-            leftSmallOffset: -3.75,
-            UNSAFE_LEFT_OFFSET: 18,
-            offsetLeftM: 1,
-            offsetLeftR: 0,
+            OFFSET_HORT: -0.15,
+            OFFSET_VERT: 0.4,
         },
 
     ]
@@ -1655,16 +1645,38 @@ const DroppableEdge: React.FC<{
     )
 }
 
+function getPortVertexPairs(port: number) {
+    switch (port) {
+        case 0: return [1, 4];
+        case 1: return [2, 6];
+        case 2: return [11, 16];
+        case 3: return [12, 17];
+        case 4: return [27, 33];
+        case 5: return [34, 39];
+        case 6: return [43, 47];
+        case 7: return [48, 52];
+        case 8: return [50, 53];
+    }
+}
+
 const DroppablePort: React.FC<{
     port: typeof ports[0],
+    portData: {
+        giveResource: number,
+        getResource: number,
+        resourceType: "BRICK" | "LUMBER" | "ORE" | "WHEAT" | "WOOL",
+        name: string
+        id: number
+    },
+    portVertexPair: number[]
 }> = (props) => {
     return (
         <div
             className={`port`}
             style={{
                 zIndex: 0,
-                top: `calc(((var(--hex-height) * ${props.port.line}) + ${props.port.offsetTop}rem))`,
-                left: `calc((((var(--hex-width) + ${props.port.leftSmallOffset}px ) * ${props.port.leftPosition}) + ${props.port.UNSAFE_LEFT_OFFSET}px + 1rem ) + (var(--hex-width) * ${props.port.offsetLeftM} + ${props.port.offsetLeftR}px))`,
+                top: `calc(((var(--hex-height) * ${props.port.line}) + 1rem) + ( var(--hex-height) * ${props.port.offsetTop} ) + (${props.port.OFFSET_VERT} * var(--hex-side)))`,
+                left: `calc((((var(--hex-width) + ${props.port.leftSmallOffset}px ) * ${props.port.leftPosition}) + ${props.port.UNSAFE_LEFT_OFFSET}px + 1rem ) + (var(--hex-width) * ${props.port.offsetLeftM} + ${props.port.offsetLeftR}px) + (${props.port.OFFSET_HORT} * var(--hex-side)))`,
                 transform: `rotate(${props.port.angle}deg)`,
             }}
             onClick={() => {
@@ -1673,11 +1685,11 @@ const DroppablePort: React.FC<{
                     icon: <></>,
                     content: <div>
                         <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
-                            Port of Vertices {props.port.vertex1} and {props.port.vertex2}
+                            Port of Vertices {props.portVertexPair[0]} and {props.portVertexPair[1]}
                         </Typography.Title>
                         <Divider></Divider>
                         <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
-                            Random Trade Port
+                            {props.portData.name} Ratio- {props.portData.giveResource}:1
                         </Typography.Title>
                         <Divider></Divider>
                         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
@@ -1856,6 +1868,13 @@ const Board: React.FC<{
     edgeRegistrationFn: (id: number) => Promise<IEdgeData>,
     vertexRegistrationFn: (id: number) => Promise<IVertexData>,
     nodeRegistrationFn: (id: number) => Promise<INodeData>,
+    portList: {
+        giveResource: number,
+        getResource: number,
+        resourceType: "BRICK" | "LUMBER" | "ORE" | "WHEAT" | "WOOL",
+        name: string
+        id: number
+    }[],
 }> = (props) => {
     //console.log(props.nodeData);
     //console.log(props.nodeData.length)
@@ -1906,7 +1925,7 @@ const Board: React.FC<{
                 }
                 {
                     ports.map((port, key) =>
-                        <DroppablePort port={port} key={key}>
+                        <DroppablePort portData={props.portList[key]} portVertexPair={getPortVertexPairs(key)!} port={port} key={key}>
 
                         </DroppablePort>
                     )
