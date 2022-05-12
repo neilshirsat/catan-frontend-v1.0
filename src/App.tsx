@@ -1,6 +1,6 @@
 import Board, { EdgeData, IEdgeData, INodeData, IVertexData, NodeData, Player, VertexData } from "./Board";
 import './app.less'
-import { Button, Card, Checkbox, Divider, Drawer, Form, FormInstance, Input, InputNumber, List, message, Modal, notification, Popconfirm, Select, Space, Spin, Table, Typography } from "antd";
+import { Button, Card, Checkbox, Divider, Drawer, Empty, Form, FormInstance, Input, InputNumber, List, message, Modal, notification, Popconfirm, Select, Space, Spin, Table, Typography } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import Deck from "./Deck";
 import Timer from "./Timer";
@@ -13,6 +13,7 @@ import { DragDropContext, DraggableLocation, DropResult } from "react-beautiful-
 import { TransferList, TransferListProps } from "./transfer-list";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import { useForm } from "antd/lib/form/Form";
+import GameCard from "./GameCard";
 
 const { info } = Modal;
 
@@ -87,6 +88,7 @@ const App = () => {
     const [isTradeOpen, setTradeOpen] = useState(false);
     const [isStoreOpen, setStoreOpen] = useState(false);
     const [isDeckOpen, setDeckOpen] = useState(false);
+    const [isDevelopmentCardsOpen, setDevelopmentCardsOpen] = useState(false);
     const [isControlsVisible, setControlsVisible] = useState(false);
     const [isRulesVisible, setRulesVisible] = useState(false);
 
@@ -136,7 +138,37 @@ const App = () => {
     const [isBuildingSettlement, setIsBuildingSettlement] = useState(false);
     const [isBuildingCity, setIsBuildingCity] = useState(false);
 
+    const [isLoadingAmountLeft, setIsLoadingAmountLeft] = useState(false);
+    const [amountLeft, setAmountLeft] = useState<{
+        key: string,
+        value: string,
+    }[]>([])
+
     const [isPortOpen, setPortOpen] = useState(false)
+
+    const [isPlayingKnightCard, setPlayingKnightCard] = useState(false);
+    const [isPlayingRoadBuildingCard, setPlayingRoadBuildingCard] = useState(false);
+    const [currentRoadBuildingCards, setCurrentRoadBuildingCards] = useState<number[]>([])
+
+    useEffect(() => {
+        if (currentPlayer.secretVictoryPoints + currentPlayer.victoryPoints >= 10) {
+            info({
+                width: "1000px",
+                content: <Typography.Title style={{ textAlign: 'center' }}>🎉 {currentPlayer.playerName} won the game 🎉</Typography.Title>,
+                okText: "Continue",
+                icon: <></>,
+                cancelButtonProps: { style: { display: 'none' }, },
+                onOk: () => {
+                    axios({
+                        url: `http://localhost:${IPC_PORT_CATAN}/restart`,
+                        method: 'GET'
+                    });
+                    setCurrentRoute("title");
+                },
+                onCancel: setSelectedNodesRobber
+            });
+        }
+    }, [currentPlayer])
 
     function getPlayerData() {
         axios({
@@ -182,6 +214,51 @@ const App = () => {
             arr.push(val[' Color']);
         }
         return arr;
+    }
+
+    const [portList, setPortList] = useState<{
+        giveResource: number,
+        getResource: number,
+        resourceType: "BRICK" | "LUMBER" | "ORE" | "WHEAT" | "WOOL",
+        name: string
+        id: number
+    }[]>([])
+
+    function getPortList() {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/port-list`,
+            method: 'GET',
+        }).then(value => {
+            console.log(value.data);
+            let data: typeof portList = value.data;
+            for (let i = 0; i < data.length; i++) {
+                data[i].id = i;
+            }
+            setPortList(data);
+        })
+    }
+
+    function getPortVertices() {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/port-vertices`,
+            method: 'GET',
+        }).then(value => {
+            console.log(value.data);
+        })
+    }
+
+    function getPortVertexPairs(port: number) {
+        switch (port) {
+            case 0: return [1, 4];
+            case 1: return [2, 6];
+            case 2: return [11, 16];
+            case 3: return [12, 17];
+            case 4: return [27, 33];
+            case 5: return [34, 39];
+            case 6: return [43, 47];
+            case 7: return [48, 52];
+            case 8: return [50, 53];
+        }
     }
 
     let hasQueriedNodes = false;
@@ -249,6 +326,8 @@ const App = () => {
             setCurrentPlayer(value.data);
             setStage1MessageVisible(true);
             //console.log(value.data);
+            getPortList();
+            getPortVertices();
         })
         setCurrentRoute("loading")
     };
@@ -348,6 +427,7 @@ const App = () => {
                         getPlayerData();
                     }
                     info({
+                        width: "1000px",
                         content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName}, Please place a road adjacent to the vertex you just placed`}</Typography.Text>,
                         okText: "Continue",
                         icon: <></>,
@@ -368,6 +448,29 @@ const App = () => {
     }
 
     async function registerSelectedEdges(edgeId: number): Promise<IEdgeData> {
+        if (isPlayingRoadBuildingCard) {
+            if (currentRoadBuildingCards.length <= 0) {
+                setCurrentRoadBuildingCards([edgeId])
+            }
+            else {
+                currentRoadBuildingCards.push(edgeId);
+                axios({
+                    url: `http://localhost:${IPC_PORT_CATAN}/use-road-building`,
+                    method: 'POST',
+                    data: {
+                        edgeId1: currentRoadBuildingCards[0],
+                        edgeId2: currentRoadBuildingCards[1],
+                        playerId: currentPlayer.id
+                    }
+                }).then(value => {
+                    setEdgeData(value.data);
+                    setSelectedEdges([]);
+                    setCurrentRoadBuildingCards([]);
+                    setIsBuildingRoad(false);
+                })
+                return {} as IEdgeData;
+            }
+        }
         axios({
             url: `http://localhost:${IPC_PORT_CATAN}/build-road`,
             method: 'POST',
@@ -392,6 +495,27 @@ const App = () => {
     }
 
     async function registerSelectedNode(nodeId: number): Promise<INodeData> {
+        if (isPlayingKnightCard) {
+            axios({
+                url: `http://localhost:${IPC_PORT_CATAN}/move-robber`,
+                method: 'POST',
+                data: {
+                    nodeId: nodeId
+                }
+            }).then(value => {
+                //console.log(value)
+                setSelectedNodes([])
+                axios({
+                    url: `http://localhost:${IPC_PORT_CATAN}/get-nodes`,
+                    method: 'GET',
+                }).then((res) => {
+                    //console.log(res.data);
+                    setNodeData(res.data);
+                    getPlayersToRob();
+                })
+            })
+            return {} as INodeData;
+        }
         //console.log('In Register Selected Node')
         axios({
             url: `http://localhost:${IPC_PORT_CATAN}/move-robber`,
@@ -456,6 +580,7 @@ const App = () => {
                                 //console.log("Before Player")
                                 //console.log(currentPlayer)
                                 info({
+                                    width: "1000px",
                                     content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${res.data.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
                                     okText: "Continue",
                                     icon: <></>,
@@ -466,6 +591,7 @@ const App = () => {
                             }
                             else if (currentStage == 2) {
                                 info({
+                                    width: "1000px",
                                     content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${res.data.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
                                     okText: "Continue",
                                     icon: <></>,
@@ -475,8 +601,21 @@ const App = () => {
                                 })
                             }
                             else {
-                                setHasBuilt(false);
-                                setDiceRoll(-1);
+                                info({
+                                    width: "1000px",
+                                    content: <Typography.Title style={{ textAlign: 'center' }}>{`Player ${res.data.playerName}, It is your turn now`}</Typography.Title>,
+                                    okText: "Continue",
+                                    icon: <></>,
+                                    cancelButtonProps: { style: { display: 'none' } },
+                                    onOk: () => {
+                                        setHasBuilt(false);
+                                        setDiceRoll(-1);
+                                    },
+                                    onCancel: () => {
+                                        setHasBuilt(false);
+                                        setDiceRoll(-1);
+                                    },
+                                })
                                 //rollDice();
                             }
                         }
@@ -515,13 +654,34 @@ const App = () => {
             .then(res => {
                 setPlayersToRob(res.data)
                 const dialog = info({
+                    width: "1000px",
                     //@ts-ignore
                     content: (
                         <>
-                            <Typography.Text strong>Choose a Player to Steal From</Typography.Text>
+                            <Typography.Title style={{ textAlign: 'center' }}>Choose a Player to Steal From</Typography.Title>
+                            <Divider></Divider>
                             <Space style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                                 {
                                     playersToRob.map(val => <Button type="primary" onClick={() => {
+
+                                        if (isPlayingKnightCard) {
+                                            axios(`http://localhost:${IPC_PORT_CATAN}/use-knight`, {
+                                                method: 'POST',
+                                                data: {
+                                                    playerRobbingId: currentPlayer.id,
+                                                    playerRobbedId: val.id,
+                                                }
+                                            })
+                                                .then(res => {
+                                                    setCurrentPlayer(res.data)
+                                                    notification.open({
+                                                        message: 'Knight Card Played Successfully'
+                                                    })
+                                                    setPlayingKnightCard(false);
+                                                })
+                                            return;
+                                        }
+
                                         axios(`http://localhost:${IPC_PORT_CATAN}/rob-cards`, {
                                             method: 'POST',
                                             data: {
@@ -530,16 +690,9 @@ const App = () => {
                                             }
                                         })
                                             .then(res => {
-                                                info({
-                                                    //@ts-ignore
-                                                    content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName} stole a ${formatedCardName(res.data)} from ${val.playerName}`}</Typography.Text>,
-                                                    okText: "Continue",
-                                                    icon: <></>,
-                                                    cancelButtonProps: { style: { display: 'none' }, },
-                                                    onOk: setSelectedNodesRobber,
-                                                    onCancel: setSelectedNodesRobber
+                                                notification.open({
+                                                    message: `Player ${currentPlayer.playerName} stole a ${formatedCardName(res.data)} from ${val.playerName}`
                                                 })
-                                                dialog.destroy();
                                             })
                                     }}>
                                         {val.playerName}
@@ -547,15 +700,15 @@ const App = () => {
                                 }
                                 {
                                     playersToRob.length <= 0 ?
-                                    <>
-                                    <div>
-                                        <Typography.Text strong>No One to Rob.</Typography.Text>
-                                    </div>
-                                    <Button type="primary" onClick={()=>dialog.destroy()}>
-                                        Continue
-                                    </Button>
-                                    </>
-                                    : <></>
+                                        <>
+                                            <div>
+                                                <Typography.Text strong>No One to Rob.</Typography.Text>
+                                            </div>
+                                            <Button type="primary" onClick={() => dialog.destroy()}>
+                                                Continue
+                                            </Button>
+                                        </>
+                                        : <></>
                                 }
                             </Space>
                         </>
@@ -598,6 +751,7 @@ const App = () => {
                 console.log(currentDeckOverflowPlayers);
                 if (currentDeckOverflowPlayers.length <= 0) {
                     info({
+                        width: "1000px",
                         //@ts-ignore
                         content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName} please move the robber`}</Typography.Text>,
                         okText: "Continue",
@@ -681,6 +835,7 @@ const App = () => {
                 }
                 else {
                     info({
+                        width: "1000px",
                         //@ts-ignore
                         content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName} please move the robber`}</Typography.Text>,
                         okText: "Continue",
@@ -696,6 +851,7 @@ const App = () => {
     const [tradeForm] = useForm();
     function createTrade() {
         const dialog = info({
+            width: "1000px",
             content: <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <Form form={tradeForm} onFinish={(instance) => {
                     dialog.destroy();
@@ -722,30 +878,27 @@ const App = () => {
                     console.log(instance)
                     console.log(sum)
                     if (sum > 0 && p1Sum > 0 && p2Sum > 0) {
-                        axios(`http://localhost:${IPC_PORT_CATAN}/initiate-trade`, {
-                            method: 'POST',
-                            data: {
-                                player1Outgoing: {
+                        setCurrentTrades([
+                            ...currentTrades,
+                            {                                
+                                tradeOutgoing: {
                                     BRICK: instance['outgoing-brick'],
                                     LUMBER: instance['outgoing-lumber'],
                                     ORE: instance['outgoing-ore'],
                                     WHEAT: instance['outgoing-wheat'],
                                     WOOL: instance['outgoing-wool']
                                 },
-                                player2Outgoing: {
+                                tradeIngoing: {
                                     BRICK: instance['ingoing-brick'],
                                     LUMBER: instance['ingoing-lumber'],
                                     ORE: instance['ingoing-ore'],
                                     WHEAT: instance['ingoing-wheat'],
                                     WOOL: instance['ingoing-wool']
                                 },
-                                targetPlayers: instance['target-players']
+                                targetPlayers: instance['target-players'],
+                                tradeId: Math.random()
                             }
-                        })
-                            .then(res => {
-                                setCurrentTrades(res.data)
-                                dialog.destroy();
-                            })
+                        ])
                     }
                     else {
                         dialog.destroy();
@@ -811,7 +964,6 @@ const App = () => {
                     </Form.Item>
                 </Form>
             </div>,
-            width: '1000px',
             okText: "Continue",
             icon: <></>,
             cancelButtonProps: { style: { display: 'none' } },
@@ -820,10 +972,53 @@ const App = () => {
         })
     }
 
+    const [finishTradeForm] = useForm();
     function consumeTrade(trade: Trade) {
+        const playerEnterDialog = info({
+            width: "1000px",
+            content: <Form
+                labelCol={{ span: 4 }}
+                wrapperCol={{ span: 14 }}
+                layout="horizontal"
+                form={finishTradeForm}
+                onFinish={(val) => {
+                    let user = getUserBasedOnPasscode(val['passcode']);
+                    if (user === undefined) {
+                        notification.open({
+                            type: 'error',
+                            message: 'Passcode is not valid'
+                        })
+                        playerEnterDialog.destroy();
+                        return;
+                    }
+                }}
+            >
+                <Typography.Paragraph>Enter your Passcode. It will automatically be used to determine your</Typography.Paragraph>
+                <Form.Item name="passcode" label="Passcode" rules={[{ required: true }]}>
+                    <Input type="password"></Input>
+                </Form.Item>
+            </Form>,
+            okText: "Continue",
+            icon: <></>,
+            cancelButtonProps: { style: { display: 'none' } },
+            onOk: finishTrade,
+            onCancel: () => tradeForm.submit(),
+        })
+    }
+
+    function getUserBasedOnPasscode(passcode: string) {
+        for (const person of otherPlayers) {
+            if (person.passcode === passcode) {
+                return person;
+            }
+        }
+    }
+
+    function finishTrade(user: UserData, trade: Trade) {
         //@ts-ignore
         window.trade = () => currentTrades();
         const dialog = info({
+            width: "1000px",
             content: <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: "flex", flexDirection: 'row' }}>
                     <div style={{ width: '50%', maxWidth: '50%' }}>
@@ -858,104 +1053,225 @@ const App = () => {
                     </div>
                 </div>
             </div>,
-            width: '1000px',
-            okText: "Continue",
+            okText: "Trade",
             icon: <></>,
-            cancelButtonProps: { style: { display: 'none' } },
-            onOk: finishTrade,
-            onCancel: finishTrade,
+            onOk: () => {
+                if (trade.tradeIngoing.BRICK > user!.deck.BRICK) {
+                    notification.open({
+                        type: 'error',
+                        message: 'Insufficient Bricks'
+                    })
+                    dialog.destroy();
+                    return;
+                }
+                if (trade.tradeIngoing.LUMBER > user!.deck.LUMBER) {
+                    notification.open({
+                        type: 'error',
+                        message: 'Insufficient Lumber'
+                    })
+                    dialog.destroy();
+                    return;
+                }
+                if (trade.tradeIngoing.WHEAT >= user!.deck.WHEAT) {
+                    notification.open({
+                        type: 'error',
+                        message: 'Insufficient Wheat'
+                    })
+                    dialog.destroy();
+                    return;
+                }
+                if (trade.tradeIngoing.WOOL >= user!.deck.WOOL) {
+                    notification.open({
+                        type: 'error',
+                        message: 'Insufficient Wool'
+                    })
+                    dialog.destroy();
+                    return;
+                }
+                if (trade.tradeIngoing.ORE >= user!.deck.ORE) {
+                    notification.open({
+                        type: 'error',
+                        message: 'Insufficient Ore'
+                    })
+                    dialog.destroy();
+                    return;
+                }
+                axios({
+                    url: `http://localhost:${IPC_PORT_CATAN}/trade`,
+                    method: 'POST',
+                    data: {
+                    }
+                }).then(value => {
+                    setCurrentTrades(value.data);
+                })
+            },
+            onCancel: () => {
+                dialog.destroy()
+            },
         })
     }
 
-    function getUserBasedOnPasscode(passcode: string) {
-        for (const person of otherPlayers) {
-            if (person.passcode === passcode) {
-                return person;
-            }
-        }
+    function fnUseDevelopmentCard() {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/use-dev-card`,
+            method: 'POST',
+            data: {}
+        }).then((res) => {
+            setCurrentPlayer(res.data);
+            notification.open({
+                message: 'Successfully Used Development Card'
+            })
+        })
     }
 
-    const [finishTradeForm] = useForm();
-    function finishTrade(trade: Trade) {
-        const dialog = info({
-            content: <Form
-                labelCol={{ span: 4 }}
-                wrapperCol={{ span: 14 }}
-                layout="horizontal"
-                form={finishTradeForm}
-                onFinish={(val) => {
-                    let user = getUserBasedOnPasscode(val['passcode']);
-                    if (user === undefined) {
-                        notification.open({
-                            type: 'error',
-                            message: 'Passcode is not valid'
-                        })
-                        dialog.destroy();
-                        return;
-                    }
-                    if (trade.tradeIngoing.BRICK > user!.deck.BRICK) {
-                        notification.open({
-                            type: 'error',
-                            message: 'Insufficient Bricks'
-                        })
-                        dialog.destroy();
-                        return;
-                    }
-                    if (trade.tradeIngoing.LUMBER > user!.deck.LUMBER) {
-                        notification.open({
-                            type: 'error',
-                            message: 'Insufficient Lumber'
-                        })
-                        dialog.destroy();
-                        return;
-                    }
-                    if (trade.tradeIngoing.WHEAT >= user!.deck.WHEAT) {
-                        notification.open({
-                            type: 'error',
-                            message: 'Insufficient Wheat'
-                        })
-                        dialog.destroy();
-                        return;
-                    }
-                    if (trade.tradeIngoing.WOOL >= user!.deck.WOOL) {
-                        notification.open({
-                            type: 'error',
-                            message: 'Insufficient Wool'
-                        })
-                        dialog.destroy();
-                        return;
-                    }
-                    if (trade.tradeIngoing.ORE >= user!.deck.ORE) {
-                        notification.open({
-                            type: 'error',
-                            message: 'Insufficient Ore'
-                        })
-                        dialog.destroy();
-                        return;
-                    }
-                    axios({
-                        url: `http://localhost:${IPC_PORT_CATAN}/verify-trade`,
-                        method: 'POST',
-                        data: {
-                            currentTrade: trade.tradeId,
-                            acceptedPlayer: user!.id
-                        }
-                    }).then(value => {
-                        setCurrentTrades(value.data);
-                    })
-                }}
-            >
-                <Typography.Paragraph>Enter your Passcode. It will automatically be used to determine your</Typography.Paragraph>
-                <Form.Item name="passcode" label="Passcode" rules={[{ required: true }]}>
-                    <Input type="password"></Input>
-                </Form.Item>
-            </Form>,
+    function fnUseYearOfPlenty(resource1: string, resource2: string) {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/use-year-of-plenty`,
+            method: 'POST',
+            data: {
+                playerId: currentPlayer.id,
+                resourceType1: resource1,
+                resourceType2: resource2
+            }
+        }).then((res) => {
+            setCurrentPlayer(res.data);
+            notification.open({
+                message: 'Successfully Used Year of Plenty Card'
+            })
+        })
+    }
+
+    function fnUseMonopoly(resource: string) {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/use-monopoly`,
+            method: 'POST',
+            data: {
+                playerId: currentPlayer.id,
+                resourceType: resource
+            }
+        }).then((res) => {
+            setCurrentPlayer(res.data);
+            getOtherPlayerData();
+            notification.open({
+                message: 'Successfully Used Monopoly Card'
+            })
+        })
+    }
+
+    function fnUseKnight() {
+        setPlayingKnightCard(true);
+        setSelectedNodesRobber();
+    }
+
+    function fnUseRoadBuilding() {
+        setDevelopmentCardsOpen(false);
+        setPlayingRoadBuildingCard(true);
+        setSelectedEdgeStage1();
+    }
+
+    useEffect(() => {
+        console.log('Updates Is Loading Amount Left');
+        console.log(`New Value ${isLoadingAmountLeft}`);
+    }, [isLoadingAmountLeft])
+
+    useEffect(() => {
+        console.log('Updates Amount Left');
+        console.log(amountLeft)
+        setIsLoadingAmountLeft(false);
+        if (amountLeft.length <= 0) return;
+        info({
+            title: 'Game Statistics',
             width: '1000px',
-            okText: "Continue",
             icon: <></>,
-            cancelButtonProps: { style: { display: 'none' } },
-            onOk: finishTrade,
-            onCancel: () => tradeForm.submit(),
+            centered: true,
+            content: <div className="VScroll" style={{ maxHeight: '70vh' }}>
+                <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                    Game Statistics
+                </Typography.Title>
+                <Divider></Divider>
+                <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                    Amount of Resource Cards in the Deck
+                </Typography.Title>
+                {
+                    !amountLeft ? <></> :
+                        <Table
+                            columns={[
+                                {
+                                    title: 'Card Name',
+                                    dataIndex: 'key',
+                                    key: 'card-name'
+                                },
+                                {
+                                    title: 'Amount Cards Left',
+                                    dataIndex: 'value',
+                                    key: 'card-value'
+                                }
+                            ]}
+                            rowKey={record => (record.key + Math.random())}
+                            dataSource={amountLeft}>
+
+                        </Table>
+                }
+                <Divider></Divider>
+                <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                    Player Inventory
+                    <Table
+                        columns={[
+                            {
+                                title: 'Type',
+                                dataIndex: 'key',
+                                key: 'type'
+                            },
+                            {
+                                title: 'Amount Left',
+                                dataIndex: 'value',
+                                key: 'value'
+                            }
+                        ]}
+                        rowKey={record => (record.key + Math.random())}
+                        dataSource={[
+                            {
+                                key: 'Settlements',
+                                value: currentPlayer.amountSettlements
+                            },
+                            {
+                                key: 'City',
+                                value: currentPlayer.amountCities
+                            },
+                            {
+                                key: 'Roads',
+                                value: currentPlayer.amountRoads
+                            }
+                        ]}>
+                    </Table>                                               </Typography.Title>
+                <Divider></Divider>
+                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+
+                </div>
+            </div>
+        })
+    }, [amountLeft])
+
+    function tradeWithBank(
+        requestedResource: "BRICK" | "LUMBER" | "ORE" | "WHEAT" | "WOOL",
+        sentResource: "BRICK" | "LUMBER" | "ORE" | "WHEAT" | "WOOL",
+        amountToSend: number) {
+        axios({
+            url: `http://localhost:${IPC_PORT_CATAN}/trade-with-bank`,
+            method: 'POST',
+            data: {
+                playerId: currentPlayer.id,
+                tradeOutgoing: {
+                    [sentResource]: amountToSend,
+                },
+                resourceGiven: sentResource,
+                resourceNeeded: requestedResource
+            }
+        }).then((res) => {
+            setCurrentPlayer(res.data);
+            notification.open({
+                message: 'Successfully Traded Cards'
+            })
         })
     }
 
@@ -1189,6 +1505,30 @@ const App = () => {
                                     Actions
                                 </Typography.Title>
                                 <div className="section-items">
+                                    <Button type="ghost" onClick={() => {
+                                        setIsLoadingAmountLeft(true);
+                                        axios({
+                                            url: `http://localhost:${IPC_PORT_CATAN}/get-amount-left`,
+                                            method: 'GET'
+                                        }).then((res) => {
+                                            let values = [];
+                                            for (const key in res.data) {
+                                                values.push({
+                                                    key: key,
+                                                    value: (res.data[key] as string)
+                                                });
+                                            }
+                                            console.log(res);
+                                            console.log(values);
+                                            setAmountLeft(values);
+                                        })
+                                        console.log(isLoadingAmountLeft);
+                                    }}>
+                                        Game Statistics
+                                    </Button>
+                                    <Button type="ghost" onClick={() => setDevelopmentCardsOpen(true)}>
+                                        Development Cards
+                                    </Button>
                                     <Button type="ghost" onClick={() => setDeckOpen(true)}>
                                         View Deck
                                     </Button>
@@ -1241,7 +1581,7 @@ const App = () => {
                                             </Button>
                                             : <></>
                                     }
-                                    <Button type="ghost" disabled={diceRoll != -1} onClick={() => {
+                                    <Button type="ghost" disabled={diceRoll != -1 || currentStage != 3} onClick={() => {
                                         rollDice()
                                     }}>
                                         Roll the Dice
@@ -1253,7 +1593,7 @@ const App = () => {
                                         okText="Pass the Dice"
                                         cancelText="Continue Turn"
                                     >
-                                        <Button type="primary" danger>
+                                        <Button type="primary" style={{ width: '100%' }} danger disabled={diceRoll === -1}>
                                             Pass the Dice
                                         </Button>
                                     </Popconfirm>
@@ -1317,7 +1657,7 @@ const App = () => {
                             <div className="trade-root">
                                 <div className="trade-player-root">
                                     <Typography.Title level={4}>
-                                        Trade with the Game
+                                        Trade with Other Players
                                     </Typography.Title>
                                     <Button
                                         type="primary"
@@ -1341,8 +1681,298 @@ const App = () => {
                                 </div>
                                 <div className="trade-game-root">
                                     <Typography.Title level={4}>
-                                        Trade with the Game
+                                        Trading with the Bank
                                     </Typography.Title>
+                                    <Button
+                                        type="ghost"
+                                        style={{ marginRight: '1rem' }}
+                                        onClick={() => {
+                                            if (currentPlayer.deck.BRICK < 4 &&
+                                                currentPlayer.deck.LUMBER < 4 &&
+                                                currentPlayer.deck.ORE < 4 &&
+                                                currentPlayer.deck.WHEAT < 4 &&
+                                                currentPlayer.deck.WOOL < 4) {
+                                                notification.open({
+                                                    message: 'Insufficient Resources'
+                                                })
+                                                return;
+                                            }
+                                            const dialog = info({
+                                                width: '1000px',
+                                                icon: <></>,
+                                                content: <div>
+                                                    <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                        Trade with Bank 3:1 Ratio
+                                                    </Typography.Title>
+                                                    <Divider></Divider>
+                                                    <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                        Choose Which Resources to Trade
+                                                    </Typography.Title>
+                                                    <Form onFinish={(formInstance) => {
+                                                        tradeWithBank(formInstance['req-resource'], formInstance['send-resource'], 3);
+                                                        dialog.destroy();
+                                                    }}>
+                                                        <Form.Item name="req-resource" label="Requested Resource From Bank" required>
+                                                            <Select>
+                                                                <Select.Option value="BRICK">Brick</Select.Option>
+                                                                <Select.Option value="LUMBER">Lumber</Select.Option>
+                                                                <Select.Option value="ORE">Ore</Select.Option>
+                                                                <Select.Option value="WHEAT">Wheat</Select.Option>
+                                                                <Select.Option value="WOOL">Wool</Select.Option>
+                                                            </Select>
+                                                        </Form.Item>
+                                                        <Form.Item name="send-resource" label="Resource to Send" required>
+                                                            <Select>
+                                                                {
+                                                                    currentPlayer.deck.BRICK >= 3 ?
+                                                                        <Select.Option value="BRICK">Brick</Select.Option> : <></>
+                                                                }
+                                                                {
+                                                                    currentPlayer.deck.LUMBER >= 3 ?
+                                                                        <Select.Option value="LUMBER">Lumber</Select.Option> : <></>
+                                                                }
+                                                                {
+                                                                    currentPlayer.deck.ORE >= 3 ?
+                                                                        <Select.Option value="ORE">Ore</Select.Option> : <></>
+                                                                }
+                                                                {
+                                                                    currentPlayer.deck.WHEAT >= 3 ?
+                                                                        <Select.Option value="WHEAT">Wheat</Select.Option> : <></>
+                                                                }
+                                                                {
+                                                                    currentPlayer.deck.WOOL >= 3 ?
+                                                                        <Select.Option value="WOOL">Wool</Select.Option> : <></>
+                                                                }
+                                                            </Select>
+                                                        </Form.Item>
+                                                        <Button type="primary" htmlType="submit">
+                                                            Continue
+                                                        </Button>
+                                                    </Form>
+                                                </div>,
+                                                okButtonProps: {
+                                                    style: { display: 'none' }
+                                                },
+                                                cancelButtonProps: {
+                                                    style: { display: 'none' }
+                                                }
+                                            })
+                                        }}>
+                                        Trade with the Bank
+                                    </Button>
+                                </div>
+                                <div className="trade-game-root">
+                                    <Typography.Title level={4}>
+                                        Maritime Trade
+                                    </Typography.Title>
+                                    <List
+                                        size="small"
+                                        header={<div>Ports</div>}
+                                        bordered
+                                        dataSource={portList}
+                                        renderItem={(item) => <List.Item>
+                                            <Button
+                                                disabled={/*
+                                                    (
+                                                        !vertexData![getPortVertexPairs(item.id)![0]-1].empty ? vertexData![getPortVertexPairs(item.id)![0]-1].controlledPlayer.id !== currentPlayer.id : true ||
+                                                        !vertexData![getPortVertexPairs(item.id)![1]-1].empty ? vertexData![getPortVertexPairs(item.id)![1]-1].controlledPlayer.id !== currentPlayer.id : true
+                                                    ) &&
+                                                    (
+                                                    item.resourceType != null ?
+                                                    currentPlayer.deck[item.resourceType] >= item.giveResource 
+                                                    : ((
+                                                        currentPlayer.deck.BRICK > item.giveResource
+                                                    ) ||(
+                                                        currentPlayer.deck.LUMBER > item.giveResource
+                                                    ) ||(
+                                                        currentPlayer.deck.ORE > item.giveResource
+                                                    ) ||(
+                                                        currentPlayer.deck.WHEAT > item.giveResource
+                                                    ) ||(
+                                                        currentPlayer.deck.WOOL > item.giveResource
+                                                    )))*/false
+                                                }
+                                                type="ghost"
+                                                style={{ marginRight: '1rem' }}
+                                                onClick={() => {
+                                                    console.log(vertexData![getPortVertexPairs(item.id)![0] - 1].empty)
+                                                    console.log(vertexData![getPortVertexPairs(item.id)![1] - 1].empty)
+                                                    console.log(vertexData![getPortVertexPairs(item.id)![0] - 1]);
+                                                    console.log(vertexData![getPortVertexPairs(item.id)![1] - 1]);
+                                                    console.log(currentPlayer.id)
+
+                                                    if (
+                                                        ((!vertexData![getPortVertexPairs(item.id)![0] - 1].empty) ?
+                                                            vertexData![getPortVertexPairs(item.id)![0] - 1].controlledPlayer.id !== currentPlayer.id :
+                                                            true) &&
+                                                        ((!vertexData![getPortVertexPairs(item.id)![1] - 1].empty) ?
+                                                            vertexData![getPortVertexPairs(item.id)![1] - 1].controlledPlayer.id !== currentPlayer.id :
+                                                            true)) {
+                                                        notification.open({
+                                                            message: 'Must Have a Settlement or City on the Port to Trade with the Port'
+                                                        })
+                                                        return;
+                                                    }
+                                                    if (item.resourceType === null) {
+                                                        if (currentPlayer.deck.BRICK < item.giveResource &&
+                                                            currentPlayer.deck.LUMBER < item.giveResource &&
+                                                            currentPlayer.deck.ORE < item.giveResource &&
+                                                            currentPlayer.deck.WHEAT < item.giveResource &&
+                                                            currentPlayer.deck.WOOL < item.giveResource) {
+                                                            notification.open({
+                                                                message: 'Insufficient Resources'
+                                                            })
+                                                            return;
+                                                        }
+                                                    }
+                                                    if (currentPlayer.deck[item.resourceType] < item.giveResource) {
+                                                        notification.open({
+                                                            message: 'Insufficient Resources'
+                                                        })
+                                                        return;
+                                                    }
+                                                    if (item.resourceType === null) {
+                                                        const dialog = info({
+                                                            width: '1000px',
+                                                            icon: <></>,
+                                                            content: <div>
+                                                                <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                                    Trade with Bank 3:1 Ratio
+                                                                </Typography.Title>
+                                                                <Divider></Divider>
+                                                                <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                                    Choose Which Resources to Trade
+                                                                </Typography.Title>
+                                                                <Form onFinish={(formInstance) => {
+                                                                    tradeWithBank(formInstance['req-resource'], formInstance['send-resource'], 3);
+                                                                    dialog.destroy();
+                                                                }}>
+                                                                    <Form.Item name="req-resource" label="Requested Resource From Bank" required>
+                                                                        <Select>
+                                                                            <Select.Option value="BRICK">Brick</Select.Option>
+                                                                            <Select.Option value="LUMBER">Lumber</Select.Option>
+                                                                            <Select.Option value="ORE">Ore</Select.Option>
+                                                                            <Select.Option value="WHEAT">Wheat</Select.Option>
+                                                                            <Select.Option value="WOOL">Wool</Select.Option>
+                                                                        </Select>
+                                                                    </Form.Item>
+                                                                    <Form.Item name="send-resource" label="Resource to Send" required>
+                                                                        <Select>
+                                                                            {
+                                                                                currentPlayer.deck.BRICK >= 3 ?
+                                                                                    <Select.Option value="BRICK">Brick</Select.Option> : <></>
+                                                                            }
+                                                                            {
+                                                                                currentPlayer.deck.LUMBER >= 3 ?
+                                                                                    <Select.Option value="LUMBER">Lumber</Select.Option> : <></>
+                                                                            }
+                                                                            {
+                                                                                currentPlayer.deck.ORE >= 3 ?
+                                                                                    <Select.Option value="ORE">Ore</Select.Option> : <></>
+                                                                            }
+                                                                            {
+                                                                                currentPlayer.deck.WHEAT >= 3 ?
+                                                                                    <Select.Option value="WHEAT">Wheat</Select.Option> : <></>
+                                                                            }
+                                                                            {
+                                                                                currentPlayer.deck.WOOL >= 3 ?
+                                                                                    <Select.Option value="WOOL">Wool</Select.Option> : <></>
+                                                                            }
+                                                                        </Select>
+                                                                    </Form.Item>
+                                                                    <Button type="primary" htmlType="submit">
+                                                                        Continue
+                                                                    </Button>
+                                                                </Form>
+                                                            </div>,
+                                                            okButtonProps: {
+                                                                style: { display: 'none' }
+                                                            },
+                                                            cancelButtonProps: {
+                                                                style: { display: 'none' }
+                                                            }
+                                                        })
+                                                    }
+                                                    else {
+                                                        const dialog = info({
+                                                            width: '1000px',
+                                                            icon: <></>,
+                                                            content: <div>
+                                                                <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                                    Trade with the Bank 2:1 Ratio
+                                                                </Typography.Title>
+                                                                <Divider></Divider>
+                                                                <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                                    Choose Which Resource to Give
+                                                                </Typography.Title>
+                                                                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+
+                                                                    {
+                                                                        currentPlayer.deck.BRICK >= 2 ?
+                                                                            <Button onClick={() => {
+                                                                                dialog.destroy();
+                                                                                tradeWithBank(item.resourceType, "BRICK", item.giveResource)
+                                                                            }}>
+                                                                                Brick
+                                                                            </Button> : <></>
+                                                                    }
+                                                                    {
+                                                                        currentPlayer.deck.LUMBER >= 2 ?
+                                                                            <Button onClick={() => {
+                                                                                dialog.destroy();
+                                                                                tradeWithBank(item.resourceType, "LUMBER", item.giveResource)
+                                                                            }}>
+                                                                                Lumber
+                                                                            </Button> : <></>
+                                                                    }
+                                                                    {
+                                                                        currentPlayer.deck.ORE >= 2 ?
+                                                                            <Button onClick={() => {
+                                                                                dialog.destroy();
+                                                                                tradeWithBank(item.resourceType, "ORE", item.giveResource)
+                                                                            }}>
+                                                                                Ore
+                                                                            </Button> : <></>
+                                                                    }
+                                                                    {
+                                                                        currentPlayer.deck.WHEAT >= 2 ?
+                                                                            <Button onClick={() => {
+                                                                                dialog.destroy();
+                                                                                tradeWithBank(item.resourceType, "WHEAT", item.giveResource)
+                                                                            }}>
+                                                                                Wheat
+                                                                            </Button> : <></>
+                                                                    }
+                                                                    {
+                                                                        currentPlayer.deck.WOOL >= 2 ?
+                                                                            <Button onClick={() => {
+                                                                                dialog.destroy();
+                                                                                tradeWithBank(item.resourceType, "WOOL", item.giveResource)
+                                                                            }}>
+                                                                                Wool
+                                                                            </Button> : <></>
+                                                                    }
+                                                                </div>
+                                                            </div>,
+                                                            okButtonProps: {
+                                                                style: { display: 'none' }
+                                                            },
+                                                            cancelButtonProps: {
+                                                                style: { display: 'none' }
+                                                            }
+                                                        })
+                                                    }
+                                                }}>
+                                                Trade with the Port
+                                            </Button>
+                                            <Typography.Text strong style={{ marginRight: '1rem' }}>
+                                                {item.name}
+                                            </Typography.Text>
+                                            <Typography.Text>
+                                                Trade Ratio- {item.giveResource}:{item.getResource}
+                                            </Typography.Text>
+                                        </List.Item>}
+                                    />
                                 </div>
                             </div>
                         </Drawer>
@@ -1455,11 +2085,26 @@ const App = () => {
                                 <Card style={{ width: '300px' }}
                                     title="Victory Card"
                                     actions={storeCardBottom((currentPlayer.deck.WOOL >= 1 && currentPlayer.deck.WHEAT >= 1 && currentPlayer.deck.ORE >= 1), () => {
-
+                                        if (currentPlayer.deck.WOOL < 1 || currentPlayer.deck.WHEAT < 1 || currentPlayer.deck.ORE < 1) {
+                                            notification.open({
+                                                message: 'Insufficient Resources'
+                                            });
+                                            return;
+                                        }
+                                        axios({
+                                            url: `http://localhost:${IPC_PORT_CATAN}/buy-development-card`,
+                                            method: 'POST',
+                                            data: {}
+                                        }).then((res) => {
+                                            setCurrentPlayer(res.data);
+                                            notification.open({
+                                                message: 'Successfully Bought Development Card'
+                                            })
+                                        })
                                     })}
                                     cover={<div></div>}>
                                     <Typography.Text>
-                                        Materials Needed:
+                                        Materials Needed: 1 Wool, 1 Wheat, 1 Ore
                                     </Typography.Text>
                                 </Card>
                             </div>
@@ -1476,9 +2121,188 @@ const App = () => {
                             }
                             className="VScroll"
                         >
+                            <Typography.Title level={5}>Contains the Players Resource and Special Cards. The use development card sidebar contains the development cards</Typography.Title>
                             <Deck userData={currentPlayer}>
 
                             </Deck>
+                        </Drawer>
+                        <Drawer
+                            title="Development Cards"
+                            placement="right"
+                            size="large"
+                            onClose={() => setDevelopmentCardsOpen(false)}
+                            visible={isDevelopmentCardsOpen}
+                            extra={
+                                <Space>
+                                </Space>
+                            }
+                            className="VScroll"
+                        >
+                            <Typography.Title level={5}>Contains the Current Player's Development Cards. Click on a card to Use</Typography.Title>
+                            <div className="deck" style={{
+                                justifyContent: (currentPlayer.developmentCards.KNIGHT <= 0 && currentPlayer.developmentCards.MONOPOLY <= 0 && currentPlayer.developmentCards.ROAD_BUILDING <= 0 && currentPlayer.developmentCards.VICTORY_POINT <= 0 && currentPlayer.developmentCards.YEAR_OF_PLENTY <= 0) ? 'center' : 'flex-start'
+                            }}>
+                                {
+                                    currentPlayer.developmentCards.VICTORY_POINT <= 0 ? <></> :
+                                        <GameCard
+                                            title="Victory Point Cards"
+                                            img=""
+                                            count={currentPlayer.developmentCards.VICTORY_POINT}
+                                            description={<Typography.Paragraph>
+
+                                            </Typography.Paragraph>}
+                                        >
+
+                                        </GameCard>
+                                }
+                                {
+                                    currentPlayer.developmentCards.KNIGHT <= 0 ? <></> :
+                                        <GameCard
+                                            title="Knight Card"
+                                            img=""
+                                            count={currentPlayer.developmentCards.KNIGHT}
+                                            description={<Typography.Paragraph>
+
+                                            </Typography.Paragraph>}
+                                            action={<Button onClick={() => fnUseKnight()}>
+                                                Use 1 Knight Card
+                                            </Button>}>
+
+                                        </GameCard>
+                                }
+                                {
+                                    currentPlayer.developmentCards.MONOPOLY <= 0 ? <></> :
+                                        <GameCard
+                                            title="Monopoly Card"
+                                            img=""
+                                            count={currentPlayer.developmentCards.MONOPOLY}
+                                            description={<Typography.Paragraph>
+
+                                            </Typography.Paragraph>}
+                                            action={<Button onClick={() => {
+                                                info({
+                                                    width: '1000px',
+                                                    icon: <></>,
+                                                    content: <div>
+                                                        <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                            Monopoly Card
+                                                        </Typography.Title>
+                                                        <Divider></Divider>
+                                                        <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                            Choose Which Resourse to Take from the other players
+                                                        </Typography.Title>
+                                                        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                                            <Button onClick={() => fnUseMonopoly("BRICK")}>
+                                                                Brick
+                                                            </Button>
+                                                            <Button onClick={() => fnUseMonopoly("LUMBER")}>
+                                                                Lumber
+                                                            </Button>
+                                                            <Button onClick={() => fnUseMonopoly("ORE")}>
+                                                                Ore
+                                                            </Button>
+                                                            <Button onClick={() => fnUseMonopoly("WHEAT")}>
+                                                                Wheat
+                                                            </Button>
+                                                            <Button onClick={() => fnUseMonopoly("WOOL")}>
+                                                                Wool
+                                                            </Button>
+                                                        </div>
+                                                    </div>,
+                                                    okButtonProps: {
+                                                        style: { display: 'none' }
+                                                    },
+                                                    cancelButtonProps: {
+                                                        style: { display: 'none' }
+                                                    }
+                                                })
+                                            }}>
+                                                Use 1 Monopoly Card
+                                            </Button>}>
+
+                                        </GameCard>
+                                }
+                                {
+                                    currentPlayer.developmentCards.YEAR_OF_PLENTY <= 0 ? <></> :
+                                        <GameCard
+                                            title="Year of Plenty Card"
+                                            img=""
+                                            count={currentPlayer.developmentCards.YEAR_OF_PLENTY}
+                                            description={<Typography.Paragraph>
+
+                                            </Typography.Paragraph>}
+                                            action={<Button onClick={() => {
+                                                info({
+                                                    width: '1000px',
+                                                    icon: <></>,
+                                                    content: <div>
+                                                        <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                            Year of Plenty Card
+                                                        </Typography.Title>
+                                                        <Divider></Divider>
+                                                        <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                                            Choose Which Resourse to take from the Bank
+                                                        </Typography.Title>
+                                                        <Form onFinish={(formInstance) => {
+                                                            fnUseYearOfPlenty(formInstance['resource-1'], formInstance['resource-2']);
+                                                        }}>
+                                                            <Form.Item name="resource-1" label="1st Resource" required>
+                                                                <Select>
+                                                                    <Select.Option value="BRICK">Brick</Select.Option>
+                                                                    <Select.Option value="LUMBER">Lumber</Select.Option>
+                                                                    <Select.Option value="ORE">Ore</Select.Option>
+                                                                    <Select.Option value="WHEAT">Wheat</Select.Option>
+                                                                    <Select.Option value="WOOL">Wool</Select.Option>
+                                                                </Select>
+                                                            </Form.Item>
+                                                            <Form.Item name="resource-2" label="2nd Resource" required>
+                                                                <Select>
+                                                                    <Select.Option value="BRICK">Brick</Select.Option>
+                                                                    <Select.Option value="LUMBER">Lumber</Select.Option>
+                                                                    <Select.Option value="ORE">Ore</Select.Option>
+                                                                    <Select.Option value="WHEAT">Wheat</Select.Option>
+                                                                    <Select.Option value="WOOL">Wool</Select.Option>
+                                                                </Select>
+                                                            </Form.Item>
+                                                            <Button type="primary" htmlType="submit">
+                                                                Continue
+                                                            </Button>
+                                                        </Form>
+                                                    </div>,
+                                                    okButtonProps: {
+                                                        style: { display: 'none' }
+                                                    },
+                                                    cancelButtonProps: {
+                                                        style: { display: 'none' }
+                                                    }
+                                                })
+                                            }}>
+                                                Use 1 Year of Plenty Card
+                                            </Button>}>
+
+                                        </GameCard>
+                                }
+                                {
+                                    currentPlayer.developmentCards.ROAD_BUILDING <= 0 ? <></> :
+                                        <GameCard
+                                            title="Road Building Card"
+                                            img=""
+                                            count={currentPlayer.developmentCards.ROAD_BUILDING}
+                                            description={<Typography.Paragraph>
+
+                                            </Typography.Paragraph>}
+                                            action={<Button onClick={() => fnUseRoadBuilding()}>
+                                                Use 1 Road Building Card
+                                            </Button>}>
+
+                                        </GameCard>
+                                }
+                                {
+                                    (currentPlayer.developmentCards.KNIGHT <= 0 && currentPlayer.developmentCards.MONOPOLY <= 0 && currentPlayer.developmentCards.ROAD_BUILDING <= 0 && currentPlayer.developmentCards.VICTORY_POINT <= 0 && currentPlayer.developmentCards.YEAR_OF_PLENTY <= 0)
+                                    ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="You Dont Have Any Development Cards"></Empty>
+                                    : <></>
+                                }
+                            </div>
                         </Drawer>
                         <Modal
                             title="Game Controls"
@@ -1535,6 +2359,7 @@ const App = () => {
                             onOk={() => {
                                 setStage1MessageVisible(false)
                                 info({
+                                    width: '1000px',
                                     content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
                                     okText: "Continue",
                                     icon: <></>,
@@ -1546,6 +2371,7 @@ const App = () => {
                             onCancel={() => {
                                 setStage1MessageVisible(false)
                                 info({
+                                    width: "1000px",
                                     content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
                                     okText: "Continue",
                                     icon: <></>,
@@ -1572,6 +2398,7 @@ const App = () => {
                             onOk={() => {
                                 setStage2MessageVisible(false)
                                 info({
+                                    width: "1000px",
                                     content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
                                     okText: "Continue",
                                     icon: <></>,
@@ -1583,6 +2410,7 @@ const App = () => {
                             onCancel={() => {
                                 setStage2MessageVisible(false)
                                 info({
+                                    width: "1000px",
                                     content: <Typography.Text style={{ fontSize: 18 }} strong>{`Player ${currentPlayer.playerName}, Please place a settlement anywhere you would like on the board`}</Typography.Text>,
                                     okText: "Continue",
                                     icon: <></>,
@@ -1634,6 +2462,7 @@ const App = () => {
                             onCancel={handleDiscardPanelClose}
                             width="1250px"
                             okText="Continue"
+                            closable={false}
                             okButtonProps={{
                                 disabled: discardPanelDisabled
                             }}

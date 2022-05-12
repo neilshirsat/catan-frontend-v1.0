@@ -4,13 +4,15 @@ import { UserData } from './App';
 import './Deck.less'
 import GameCard from './GameCard';
 
-function getCardImage(card: keyof UserData['deck']) {
+function getCardImage(card: keyof UserData['deck'] | keyof UserData['specialCards']) {
     switch (card) {
         case "BRICK" : return "Brick.png";
         case "LUMBER" : return "Lumber.png";
         case "ORE" : return "Ore.png";
         case "WHEAT" : return "Wheat.png";
         case "WOOL" : return "Wool.png";
+        case "LARGEST_ARMY": return "Largest Army";
+        case "LONGEST_ROAD": return "Longest Road";
     }
 }
 
@@ -32,6 +34,46 @@ function doesUserHaveCards(userData: UserData): boolean {
     return false;
 }
 
+function getDescription(card: keyof UserData['deck'] | keyof UserData['specialCards']) {
+    switch(card) {
+        case "BRICK": return (<>
+            <Typography.Paragraph>
+                
+            </Typography.Paragraph>
+        </>);
+        case "LUMBER": return (<>
+            <Typography.Paragraph>
+
+            </Typography.Paragraph>
+        </>);
+        case "ORE": return (<>
+            <Typography.Paragraph>
+
+            </Typography.Paragraph>
+        </>);
+        case "WHEAT": return (<>
+            <Typography.Paragraph>
+
+            </Typography.Paragraph>
+        </>);
+        case "WOOL": return (<>
+            <Typography.Paragraph>
+
+            </Typography.Paragraph>
+        </>);
+        case "LARGEST_ARMY": return (<>
+            <Typography.Paragraph>
+
+            </Typography.Paragraph>
+        </>);
+        case "LONGEST_ROAD": return (<>
+            <Typography.Paragraph>
+
+            </Typography.Paragraph>
+        </>);
+    }
+}
+
 const Deck: React.FC<{
     userData: UserData
 }> = (props) => {
@@ -48,7 +90,7 @@ const Deck: React.FC<{
                             return <></>
                         }
                         //@ts-ignore
-                        return <GameCard img={getCardImage(val)} title={val} count={props.userData.deck[val]}>
+                        return <GameCard img={getCardImage(val)} title={val} count={props.userData.deck[val]} description={getDescription(val)}>
                         </GameCard>
                     })}
                     {Object.keys(props.userData.developmentCards).map((val) => {
@@ -57,16 +99,7 @@ const Deck: React.FC<{
                             return <></>
                         }
                         //@ts-ignore
-                        return <GameCard title={val} count={props.userData.developmentCards[val]}>
-                        </GameCard>
-                    })}
-                    {Object.keys(props.userData.specialCards).map((val) => {
-                        //@ts-ignore
-                        if (props.userData.specialCards[val] == 0) {
-                            return <></>
-                        }
-                        //@ts-ignore
-                        return <GameCard title={val} count={props.userData.specialCards[val]}>
+                        return <GameCard title={val} img={getCardImage(val)} count={props.userData.developmentCards[val]} description={getDescription(val)}>
                         </GameCard>
                     })}
                 </>

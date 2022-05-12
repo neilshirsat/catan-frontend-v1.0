@@ -1,5 +1,8 @@
+import { Button, Divider, Modal, Typography } from 'antd'
 import { INodeData } from './Board'
 import './hex.less'
+
+const { info } = Modal;
 
 function imageAssociatedWithResource(resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT") {
     switch (resourceType) {
@@ -31,6 +34,33 @@ function getDots(num: number) {
     }
 }
 
+function getProbabilityOfRolling(num: number) {
+    switch (num) {
+        case 2: return "1/36";
+        case 3: return "2/36";
+        case 4: return "3/36";
+        case 5: return "4/36";
+        case 6: return "5/36";
+        case 7: return "6/36";
+        case 8: return "5/36";
+        case 9: return "4/36";
+        case 10: return "3/36";
+        case 11: return "2/36";
+        case 12: return "1/36";
+    }
+}
+
+function getResourceProduced(resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT") {
+    switch (resourceType) {
+        case 'MOUNTAINS': return 'Ore'
+        case 'FIELDS': return 'Wheat'
+        case 'FOREST': return 'Lumber'
+        case 'HILLS': return 'Brick'
+        case 'PASTURE': return 'Wool'
+        case 'DESERT': return 'Nothing'
+    }
+}
+
 const Hexagon: React.FC<{
     num: number,
     nodeData: INodeData,
@@ -40,7 +70,40 @@ const Hexagon: React.FC<{
     resourceType: "HILLS" | "FOREST" | "MOUNTAINS" | "FIELDS" | "PASTURE" | "DESERT"
 }> = (props) => {
     return (<div
-        className="hex-wrapper">
+        className="hex-wrapper"
+        onClick={() => {
+            info({
+                width: '1000px',
+                icon: <></>,
+                content: <div>
+                    <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                        Hex {props.nodeData.nodeId}
+                    </Typography.Title>
+                    <Divider></Divider>
+                    <Typography.Title level={3} style={{ textTransform: 'capitalize', display: 'block', textAlign: 'center' }}>
+                        Land Type: {props.nodeData.resource.toLowerCase()}
+                    </Typography.Title>
+                    <Typography.Title level={3} style={{ textTransform: 'capitalize', display: 'block', textAlign: 'center' }}>
+                        {
+                            props.nodeData.hasRobber ?
+                            <>Produces Nothing becuase contains Robber </> :
+                            <>Produces {getResourceProduced(props.nodeData.resource)}</>
+                        }
+                    </Typography.Title>
+                    <Divider></Divider>
+                    <Typography.Title level={5} style={{ textTransform: 'capitalize', display: 'block', textAlign: 'center' }}>
+                        Dice Number {props.num}
+                    </Typography.Title>
+                    <Typography.Title level={5} style={{ textTransform: 'capitalize', display: 'block', textAlign: 'center' }}>
+                        {getProbabilityOfRolling(props.num)} Chance of Rolling
+                    </Typography.Title>
+                    <Divider></Divider>
+                    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                       
+                    </div>
+                </div>
+            })
+        }}>
         <div
             className="hex">
             {
@@ -69,7 +132,7 @@ const Hexagon: React.FC<{
             {
                 props.selected ?
                     <div className="overlay">
-                        <div className="input-circle" onClick={() => props.registrationFn(props.nodeId)}>
+                        <div className="input-circle" onClick={(event) => { event.stopPropagation(); props.registrationFn(props.nodeId)}}>
 
                         </div>
                     </div>

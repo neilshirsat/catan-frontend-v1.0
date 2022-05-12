@@ -4,6 +4,7 @@ import React, { Dispatch, useEffect, useState } from "react";
 import { IPC_PORT_CATAN, UserData } from "./App";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import axios from "axios";
+import { Button, Divider, Modal, Typography } from "antd";
 
 export const scaleFactor = 4;
 
@@ -1467,6 +1468,141 @@ const vertices: {
         },
     ]
 
+const ports: {
+    vertex1: number,
+    vertex2: number,
+    angle: number,
+    line: number,
+    offsetTop: number,
+    offsetTopAdd: number,
+    leftPosition: number,
+    leftSmallOffset: number,
+    UNSAFE_LEFT_OFFSET: number,
+    offsetLeftR: number,
+    offsetLeftM: number,
+}[] = [
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 30,
+            line: -0.32,
+            offsetTop: 1.2,
+            offsetTopAdd: 0,
+            leftPosition: 1.5,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 12,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 330,
+            line: -0.32,
+            offsetTop: 1.2,
+            offsetTopAdd: 0,
+            leftPosition: -0.25,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 15,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 270,
+            line: 1,
+            offsetTop: 0.3,
+            offsetTopAdd: 0.3,
+            leftPosition: -1,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 2,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 270,
+            line: 2.5,
+            offsetTop: 0.3,
+            offsetTopAdd: 0.3,
+            leftPosition: -1,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 2,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 30,
+            line: 0.45,
+            offsetTop: 1,
+            offsetTopAdd: 0,
+            leftPosition: 3,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 17,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 90,
+            line: 1.75,
+            offsetTop: 0.3,
+            offsetTopAdd: 0,
+            leftPosition: 4,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: -3,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 150,
+            line: 3,
+            offsetTop: 0.75,
+            offsetTopAdd: 0,
+            leftPosition: 3,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 17,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 150,
+            line: 3.75,
+            offsetTop: 0.66,
+            offsetTopAdd: 0,
+            leftPosition: 1.5,
+            leftSmallOffset: 3,
+            UNSAFE_LEFT_OFFSET: 3,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+        {
+            vertex1: 1,
+            vertex2: 4,
+            angle: 210,
+            line: 3.75,
+            offsetTop: 0.5,
+            offsetTopAdd: 0,
+            leftPosition: -0.25,
+            leftSmallOffset: -3.75,
+            UNSAFE_LEFT_OFFSET: 18,
+            offsetLeftM: 1,
+            offsetLeftR: 0,
+        },
+
+    ]
+
+const { info } = Modal;
+
 const DroppableEdge: React.FC<{
     id: string,
     selected: boolean,
@@ -1492,10 +1628,71 @@ const DroppableEdge: React.FC<{
             }
             {
                 props.edgeData.road ?
-                    <div className={`road ${props.edgeData.controlledPlayer.color}`}>
+                    <div
+                        onClick={() => {
+                            info({
+                                width: '1000px',
+                                icon: <></>,
+                                content: <div>
+                                    <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                        Road of Edge {props.edgeData.edgeId}
+                                    </Typography.Title>
+                                    <Divider></Divider>
+                                    <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                                        Controlled By {props.edgeData.controlledPlayer.playerName}
+                                    </Typography.Title>
+                                    <Divider></Divider>
+                                    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                        
+                                    </div>
+                                </div>
+                            })
+                        }} className={`road ${props.edgeData.controlledPlayer.color}`}>
                     </div>
                     : <></>
             }
+        </div>
+    )
+}
+
+const DroppablePort: React.FC<{
+    port: typeof ports[0],
+}> = (props) => {
+    return (
+        <div
+            className={`port`}
+            style={{
+                zIndex: 0,
+                top: `calc(((var(--hex-height) * ${props.port.line}) + ${props.port.offsetTop}rem))`,
+                left: `calc((((var(--hex-width) + ${props.port.leftSmallOffset}px ) * ${props.port.leftPosition}) + ${props.port.UNSAFE_LEFT_OFFSET}px + 1rem ) + (var(--hex-width) * ${props.port.offsetLeftM} + ${props.port.offsetLeftR}px))`,
+                transform: `rotate(${props.port.angle}deg)`,
+            }}
+            onClick={() => {
+                info({
+                    width: '1000px',
+                    icon: <></>,
+                    content: <div>
+                        <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                            Port of Vertices {props.port.vertex1} and {props.port.vertex2}
+                        </Typography.Title>
+                        <Divider></Divider>
+                        <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                            Random Trade Port
+                        </Typography.Title>
+                        <Divider></Divider>
+                        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                            
+                        </div>
+                    </div>
+                })
+            }}
+        >
+
+            <svg viewBox="0 0 150 129" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M38 79C37.6852 79 37.3889 79.1482 37.2 79.4L1.2 127.4C0.705573 128.059 1.17595 129 2 129H148C148.824 129 149.294 128.059 148.8 127.4L112.8 79.4C112.611 79.1482 112.315 79 112 79H105C104.176 79 103.706 79.9408 104.2 80.6L130.3 115.4C130.794 116.059 130.324 117 129.5 117H21C20.176 117 19.7056 116.059 20.2 115.4L46.3 80.6C46.7944 79.9408 46.324 79 45.5 79H38Z" fill="#C4C4C4" />
+                <ellipse cx="75" cy="52" rx="22" ry="52" fill="#C4C4C4" />
+            </svg>
+
         </div>
     )
 }
@@ -1524,13 +1721,54 @@ const DroppableVertex: React.FC<{
             }
             {
                 props.vertexData.vertexType === "SETTLEMENT" ?
-                    <div className={`settlement ${props.vertexData.controlledPlayer.color}`}>
+                    <div
+                        onClick={() => {
+                            info({
+                                width: '1000px',
+                                icon: <></>,
+                                content: <div>
+                                    <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                        Settlement of Vertex {props.vertexData.vertxId}
+                                    </Typography.Title>
+                                    <Divider></Divider>
+                                    <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                                        Controlled By {props.vertexData.controlledPlayer.playerName}
+                                    </Typography.Title>
+                                    <Divider></Divider>
+                                    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                        
+                                    </div>
+                                </div>
+                            })
+                        }}
+                        className={`settlement ${props.vertexData.controlledPlayer.color}`}>
                         <svg viewBox="0 0 75 85" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M38.5238 0.708418C37.5389 -0.250095 35.965 -0.233909 35.0001 0.744658L1.0035 35.2209C0.98758 35.237 0.971944 35.2533 0.956586 35.2696C0.382802 35.6212 0 36.254 0 36.9762V84.9762H74.9876V37.0762C74.9876 36.3844 74.6531 35.7707 74.137 35.3881C74.0788 35.3184 74.0159 35.2505 73.9483 35.1846L38.5238 0.708418Z" />
                         </svg>
                     </div>
                     : props.vertexData.vertexType === 'CITY' ?
-                        <div className={`settlement ${props.vertexData.controlledPlayer.color}`}>
+                        <div
+                            onClick={() => {
+                                info({
+                                    width: '1000px',
+                                    icon: <></>,
+                                    content: <div>
+                                        <Typography.Title style={{ display: 'block', textAlign: 'center' }}>
+                                            City of Vertex {props.vertexData.vertxId}
+                                        </Typography.Title>
+                                        <Divider></Divider>
+                                        <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                                            Controlled By {props.vertexData.controlledPlayer.playerName}
+                                        </Typography.Title>
+                                        <Divider></Divider>
+                                        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                            <Button style={{ display: 'block', textAlign: 'center' }}>
+                                                Use Knight Development Card on the City
+                                            </Button>
+                                        </div>
+                                    </div>
+                                })
+                            }} className={`settlement ${props.vertexData.controlledPlayer.color}`}>
                             <svg viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M51.6051 21.087C50.6006 19.6209 48.4301 19.6416 47.4538 21.1265L25.418 54.6409C25.1775 55.0068 25.0476 55.3992 25.0126 55.7888C25.0043 55.8628 25 55.9381 25 56.0144V79.0144V127.014C25 128.119 25.8954 129.014 27 129.014H173C174.105 129.014 175 128.119 175 127.014V81.0144C175 79.9098 174.105 79.0144 173 79.0144H75V56.2079C75.044 55.671 74.9137 55.1085 74.5664 54.6014L51.6051 21.087Z" />
                             </svg>
@@ -1622,6 +1860,7 @@ const Board: React.FC<{
     //console.log(props.nodeData);
     //console.log(props.nodeData.length)
     //console.log(props.nodeData[0])
+    console.log(ports)
     return ((props.nodeData != undefined && props.edgeData != undefined && props.vertexData != undefined) ?
         (<main className="board-root">
             <div className="container">
@@ -1663,6 +1902,13 @@ const Board: React.FC<{
                         <DroppableVertex registrationFn={props.vertexRegistrationFn} selected={props.selectedVertex.indexOf(vertex.vertexId) != -1} vertexData={props.vertexData[vertex.vertexId - 1]} id={key.toString()} vertex={vertex}>
 
                         </DroppableVertex>
+                    )
+                }
+                {
+                    ports.map((port, key) =>
+                        <DroppablePort port={port} key={key}>
+
+                        </DroppablePort>
                     )
                 }
             </div>
