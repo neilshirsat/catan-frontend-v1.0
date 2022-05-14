@@ -1715,6 +1715,7 @@ const DroppableVertex: React.FC<{
     vertex: typeof vertices[0],
     vertexData: IVertexData,
     registrationFn: (id: number) => Promise<IVertexData>,
+    buildCity: (vertexId: number) => void
 }> = (props) => {
     return (
         <div
@@ -1748,7 +1749,9 @@ const DroppableVertex: React.FC<{
                                     </Typography.Title>
                                     <Divider></Divider>
                                     <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                                        
+                                        <Button onClick={()=>props.buildCity(props.vertexData.vertxId)}>
+                                            Upgrade to City
+                                        </Button>
                                     </div>
                                 </div>
                             })
@@ -1774,9 +1777,7 @@ const DroppableVertex: React.FC<{
                                         </Typography.Title>
                                         <Divider></Divider>
                                         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                                            <Button style={{ display: 'block', textAlign: 'center' }}>
-                                                Use Knight Development Card on the City
-                                            </Button>
+                                            
                                         </div>
                                     </div>
                                 })
@@ -1859,6 +1860,7 @@ export type IVertexData = {
 export type VertexData = IVertexData[];
 
 const Board: React.FC<{
+    buildCity: (vertexId: number) => void,
     selectedEdges: number[],
     selectedVertex: number[],
     selectedNodes: number[],
@@ -1918,7 +1920,7 @@ const Board: React.FC<{
                 }
                 {
                     vertices.map((vertex, key) =>
-                        <DroppableVertex registrationFn={props.vertexRegistrationFn} selected={props.selectedVertex.indexOf(vertex.vertexId) != -1} vertexData={props.vertexData[vertex.vertexId - 1]} id={key.toString()} vertex={vertex}>
+                        <DroppableVertex buildCity={props.buildCity} registrationFn={props.vertexRegistrationFn} selected={props.selectedVertex.indexOf(vertex.vertexId) != -1} vertexData={props.vertexData[vertex.vertexId - 1]} id={key.toString()} vertex={vertex}>
 
                         </DroppableVertex>
                     )

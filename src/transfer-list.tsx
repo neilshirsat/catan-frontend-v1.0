@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Typography } from 'antd';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Observable } from 'rxjs';
 
 
 const reorder = (list: {
@@ -59,6 +60,7 @@ export type TransferListProps = {
         key: string,
         value: ('ORE' | 'WOOL' | 'WHEAT' | 'LUMBER' | 'BRICK')
     }[],
+    submitObservable: Observable<void>
     stateFn: (amountInDiscard: number) => void
     submit: (keep: TransferListProps['keep'], discard: TransferListProps['discard']) => void
 }
@@ -68,6 +70,10 @@ export class TransferList extends Component<TransferListProps, TransferListProps
     constructor(props: TransferListProps) {
         super(props);
         this.state = props;
+        console.log(props);
+        this.props.submitObservable.subscribe(()=>{
+            this.props.submit(this.state.keep, this.state.discard);
+        })
     }
 
     //@ts-ignore
@@ -161,6 +167,10 @@ export class TransferList extends Component<TransferListProps, TransferListProps
             }
         }
     };
+
+    componentDidUpdate() {
+        this.props.stateFn(this.state.discard.length);
+    }
 
     render() {
         return (

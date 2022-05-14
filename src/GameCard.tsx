@@ -1,5 +1,6 @@
 import { Badge, Button, Card, Divider, Modal, Typography } from "antd";
 import React from "react";
+import { Observable } from "rxjs";
 import './GameCard.less'
 
 const { info } = Modal;
@@ -24,7 +25,14 @@ const GameCard: React.FC<{
     img: string,
     description: React.ReactNode;
     action?: React.ReactNode;
+    closeDialog?: Observable<void>
 }> = (props) => {
+    //@ts-ignore
+    let dialog = null;
+    props.closeDialog?.subscribe(()=>{
+        //@ts-ignore
+        dialog.destroy();
+    })
     return (
         <Badge count={props.count} color="blue">
             {/*<div className="card">
@@ -45,7 +53,7 @@ const GameCard: React.FC<{
             }
         </div>*/}
             <img className="image" src={props.img} onClick={() => {
-                info({
+                dialog = info({
                     width: '1000px',
                     icon: <></>,
                     content: <div>
@@ -60,10 +68,10 @@ const GameCard: React.FC<{
                         {
                             props.action ?
                                 <>
-                                    <Typography.Title level={3} style={{ display: 'block', textAlign: 'center' }}>
+                                    <Typography.Title level={5} style={{ display: 'block', textAlign: 'center' }}>
                                         Card Actions
                                     </Typography.Title>
-                                    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                    <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
                                         {props.action}
                                     </div>
                                 </>
@@ -72,7 +80,7 @@ const GameCard: React.FC<{
                         <Typography.Title level={5} style={{ display: 'block', textAlign: 'center' }}>
                             Description
                         </Typography.Title>
-                        <Typography.Paragraph>
+                        <Typography.Paragraph style={{textAlign: 'center'}}>
                             {props.description}
                         </Typography.Paragraph>
                     </div>
